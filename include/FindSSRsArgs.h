@@ -28,6 +28,7 @@ private:
 	uint32_t max_sequence_length; // default 1500
 	uint32_t min_repeats; // default 1
 	uint32_t max_repeats; // default none (uint32_t max)
+	uint32_t num_threads; // default 1
 	string usage_statement;
 	string species_1_fasta_file_name;
 	string species_2_blastdb;
@@ -47,6 +48,7 @@ public:
 	uint32_t getMaxSequenceLength() const;
 	uint32_t getMinRepeats() const;
 	uint32_t getMaxRepeats() const;
+	uint32_t getNumThreads() const;
 	string getUsageStatement() const;
 	string getSpecies1FastaFileName() const;
 	//string& getSpecies2Blastdb();

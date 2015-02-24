@@ -2,7 +2,7 @@
 
 # ------ VARIABLES -------------------
 CXX?=g++
-CXXFLAGS+=-g -Wall -Wextra -std=c++11
+CXXFLAGS+=-g -Wall -Wextra -std=c++11 -pthread
 LIBS?=
 
 # ------ TARGETS ---------------------
@@ -21,19 +21,25 @@ prep:
 obj/FindSSRsArgs.o: src/FindSSRsArgs.cpp include/FindSSRsArgs.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+obj/OutputFile.o: src/OutputFile.cpp include/OutputFile.h
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+obj/FastaSequences.o: src/FastaSequences.cpp include/FastaSequences.h
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
 obj/SingleResult.o: src/SingleResult.cpp include/SingleResult.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-obj/Results.o: src/Results.cpp include/Results.h include/SingleResult.h include/FindSSRsArgs.h
+obj/Results.o: src/Results.cpp include/Results.h include/SingleResult.h include/FindSSRsArgs.h include/OutputFile.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-obj/FindSSRs.o: src/FindSSRs.cpp include/FindSSRs.h include/FindSSRsArgs.h include/Results.h include/SingleResult.h lib/sais-lite-lcp/sais.c
+obj/FindSSRs.o: src/FindSSRs.cpp include/FindSSRs.h include/FindSSRsArgs.h include/Results.h include/SingleResult.h include/OutputFile.h include/FastaSequences.h lib/sais-lite-lcp/sais.c
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-obj/FindSSRsMain.o: src/FindSSRsMain.cpp include/FindSSRs.h
+obj/FindSSRsMain.o: src/FindSSRsMain.cpp include/FindSSRs.h include/FindSSRsArgs.h include/Results.h include/SingleResult.h include/OutputFile.h include/FastaSequences.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-bin/findSSRs: obj/FindSSRsMain.o obj/FindSSRs.o obj/Results.o obj/SingleResult.o obj/FindSSRsArgs.o
+bin/findSSRs: obj/FindSSRsMain.o obj/OutputFile.o obj/FastaSequences.o obj/FindSSRs.o obj/Results.o obj/SingleResult.o obj/FindSSRsArgs.o
 	$(CXX) $(CXXFLAGS) $(LIBS) $^ -o $@
 
 permissions:

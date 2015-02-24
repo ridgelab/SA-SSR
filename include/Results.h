@@ -18,6 +18,7 @@
 
 #include "SingleResult.h"
 #include "FindSSRsArgs.h"
+#include "OutputFile.h"
 
 using namespace std;
 
@@ -43,6 +44,6 @@ public:
 	uint32_t enumeratedSSRFilter(const string &ssr);
 	//void addBlastInfo(const string &blast_result);
 	//void writeToFile(const string &header, const string &sequence, ofstream &out_file, const bool &doing_blast);
-	void writeToFile(const string &header, const string &sequence, ofstream &out_file);
+	void writeToFile(const string &header, const string &sequence, OutputFile &out_file);
 	string toString(); 
 };

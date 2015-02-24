@@ -21,9 +21,10 @@ FindSSRsArgs::FindSSRsArgs(int argc, char* argv[])
 	this->max_sequence_length = 1500;
 	this->min_repeats = 1;
 	this->max_repeats = 4294967295; // max uint32_t size (2^32 - 1)
+	this->num_threads = 1;
 	this->usage_statement = "findSSRs [options] <input-file.fasta> <output-file>";
 	this->species_1_fasta_file_name = "";
-	this->enumerated_ssrs = new unordered_set<string>;
+	this->enumerated_ssrs = new unordered_set<string>();
 	this->out_file_name = "";
 	
 	processArgs(argc, argv);
@@ -71,6 +72,10 @@ uint32_t FindSSRsArgs::getMinRepeats() const
 uint32_t FindSSRsArgs::getMaxRepeats() const
 {
 	return this->max_repeats;
+}
+uint32_t FindSSRsArgs::getNumThreads() const
+{
+	return this->num_threads;
 }
 string FindSSRsArgs::getUsageStatement() const
 {
@@ -286,6 +291,32 @@ void FindSSRsArgs::processArgs(int argc, char* argv[])
 					stringstream strm;
 					strm << argv[i];
 					strm >> this->max_sequence_length;
+				}
+				else
+				{
+					this->arguments_valid = false;
+				}
+			}
+			else if (strcmp(argv[i], "--num-threads") == 0 || strcmp(argv[i], "-t") == 0)
+			{
+				expected_args = expected_args + 2; // 0=FindSSRsArgs, (1:argc-3)=( (-e || --exhaustive) && ((-s || --ssrs) SSR1,SSR2,SSR3,...,SSRn) && ((-b || --blast) species2-blastdb) && ((-n || --min-nucs) 16) && ((-m || --min-ssr-len) 4) && ((-M || --max-ssr-len) 8) ), (argc-2)=input_file.fasta, (argc-1)=output_file
+
+				if (i < (uint32_t) (argc - 3)) // as long as there is more space for the input and output files...
+				{
+					i++;
+					stringstream strm;
+					int temp;
+					strm << argv[i];
+					strm >> temp;
+					
+					if (temp >= 0)
+					{
+						this->num_threads = (uint32_t) temp;
+					}
+					else
+					{
+						this->arguments_valid = false;
+					}
 				}
 				else
 				{

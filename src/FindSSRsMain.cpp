@@ -5,6 +5,7 @@
 
 // include statements
 #include "../include/FindSSRs.h"
+#include "../include/FindSSRsArgs.h"
 
 // using statements
 using namespace std;
@@ -12,6 +13,12 @@ using namespace std;
 // main
 int main(int argc, char* argv[])
 {
-	FindSSRs find_ssrs = FindSSRs(argc, argv);
-	return find_ssrs.run();
+	FindSSRsArgs* args = new FindSSRsArgs(argc, argv);
+	FindSSRs find_ssrs(args);
+
+	int ret_val = find_ssrs.run();
+
+	delete args;
+
+	return ret_val;
 }

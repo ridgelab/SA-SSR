@@ -146,20 +146,21 @@ uint32_t Results::enumeratedSSRFilter(const string &ssr)
 //	}
 //}
 //void Results::writeToFile(const string &header, const string &sequence, ofstream &out_file, const bool &doing_blast)
-void Results::writeToFile(const string &header, const string &sequence, ofstream &out_file)
+void Results::writeToFile(const string &header, const string &sequence, OutputFile &out_file)
 {
+	string output;
 	if (!results.empty())
 	{
 		for (set<SingleResult>::iterator itr = this->results.begin(); itr != this->results.end(); ++itr)
 		{
 			if (isStartPositionAvailableAt(itr->getP()) == true)
 			{
-				itr->writeToFile(header, sequence, out_file);
+				itr->writeToFile(header, sequence, output);
 	//			if (doing_blast == true)
 	//			{
 	//				out_file << "\t" << this->blast_result;
 	//			}
-				out_file << endl;
+				output = output + "\n";
 
 				updateAvailableStartPositions(itr->getK(), itr->getR(), itr->getP());
 			}
@@ -167,8 +168,9 @@ void Results::writeToFile(const string &header, const string &sequence, ofstream
 	}
 	else
 	{
-		out_file << header.substr(1,string::npos) << "\t-\t0\t0" << endl;
+		output = output + header.substr(1,string::npos) + "\t-\t0\t0\n";
 	}
+	out_file << output;
 }
 string  Results::toString()
 {
