@@ -37,7 +37,9 @@ private:
 
 public:
 	FindSSRsArgs(int argc, char* argv[]);
+	FindSSRsArgs(const FindSSRsArgs &args);
 	~FindSSRsArgs();
+	void deepCopy(const FindSSRsArgs &args);
 	bool isArgumentsValid() const;
 	bool isQuickAndDirty() const;
 	//bool doingBlast() const;
@@ -51,6 +53,7 @@ public:
 	uint32_t getNumThreads() const;
 	string getUsageStatement() const;
 	string getSpecies1FastaFileName() const;
+	string getSpecies2BlastdbName() const;
 	//string& getSpecies2Blastdb();
 	unordered_set<string>* getEnumeratedSSRs() const;
 	string getOutFileName() const;
@@ -62,4 +65,5 @@ public:
 	void processArgs(int argc, char* argv[]);
 	void printHelp() const;
 	string toString() const;
+	void operator=(const FindSSRsArgs &args);
 };

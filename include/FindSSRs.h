@@ -26,30 +26,26 @@ using namespace std;
 class FindSSRs
 {
 private:
+	//FindSSRsArgs args;
 	FindSSRsArgs* args;
 	FastaSequences fasta_seqs; // thread-safe data structure
 	vector<pthread_t> threads;
 	uint32_t num_threads;
 	OutputFile out_file; // thread-safe class
-	bool finished; // reading in the fasta file
-	sem_t n; // signals number of waiting threads / available sequences
-	sem_t e; // signals space in buffer for acceptance of new sequences
+	sem_t n; // full space (for the consumer to take) in the buffer...if n increases/decreases, e should decrease/increase
+	sem_t e; // empty space (for the producer to fill) in the buffer...if e increases/decreases, n should decrease/increase
 
 public:
-	//FindSSRs(int argc, char* argv[]);
 	FindSSRs(FindSSRsArgs* _args);
 	~FindSSRs();
-	bool isFinished() const;
-	bool isFastaSeqsEmpty();
 	sem_t* getN() const;
 	sem_t* getE() const;
 	uint32_t run();
-	void makeThreads();
+	uint32_t makeThreads();
 	void joinAndForgetAllThreads();
-	void produceFromFasta();
+	void processInput();
 	void findSSRsInSequence(const string &header, const string &sequence);
 	void findSSRsInSA(const string &header, const string &sequence, const int *SA, const int *LCP);
 	void printExtraInformation(const string &header, const string &sequence, const int *SA, const int *LCP);
-	//string blastAgainstSpecies2(const string &header, const string &sequence, const string &blastdb);
 	static void* consume(void* find_ssrs);
 };

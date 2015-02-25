@@ -9,6 +9,7 @@
 #include <string>
 #include <queue>
 #include <cstddef>
+#include <cstdint>
 #include <semaphore.h>
 
 using namespace std;
@@ -19,12 +20,16 @@ private:
 	queue<string> headers;
 	queue<string> sequences;
 	sem_t lock;
+	bool dried_up_source;
+	uint32_t dry_marker;
 
 public:
 	FastaSequences();
 	~FastaSequences();
+	bool isDriedUp() const;
 	bool empty();
+	void dryUp();
 	void add(string header, string sequence);
-	void get(string &header, string &sequence);
+	uint32_t get(string &header, string &sequence);
 	//string toJSON();
 };

@@ -10,10 +10,17 @@ using namespace std;
 FastaSequences::FastaSequences()
 {
 	sem_init(&(this->lock),0,1);
+	this->dried_up_source = false;
+	this->dry_marker = 0;
 }
 FastaSequences::~FastaSequences()
 {
-	return;
+	//return;
+}
+bool FastaSequences::isDriedUp() const
+{
+	bool temp = this->dried_up_source;
+	return temp;
 }
 bool FastaSequences::empty()
 {
@@ -22,29 +29,48 @@ bool FastaSequences::empty()
 	sem_post(&(this->lock));
 	return empty;
 }
+void FastaSequences::dryUp()
+{
+	sem_wait(&(this->lock));
+	this->dried_up_source = true;
+	sem_post(&(this->lock));
+}
 void FastaSequences::add(string header, string sequence)
 {
 	sem_wait(&(this->lock));
 	this->headers.push(header);
 	this->sequences.push(sequence);
+	if (!this->dried_up_source) { this->dry_marker++; }
 	sem_post(&(this->lock));
 }
-void FastaSequences::get(string &header, string &sequence)
+uint32_t FastaSequences::get(string &header, string &sequence)
 {
+	uint32_t retval = 0;
+
 	sem_wait(&(this->lock));
-	if (this->headers.size() > 0)
+	//if (!this->dried_up_source)
+	if (this->dry_marker > 0)
 	{
 		header = this->headers.front();
 		sequence = this->sequences.front();
 		this->headers.pop();
 		this->sequences.pop();
+		this->dry_marker--;
 	}
+	//if (this->headers.size() > 0)
+	//{
+	//	header = this->headers.front();
+	//	sequence = this->sequences.front();
+	//	this->headers.pop();
+	//	this->sequences.pop();
+	//}
 	else
 	{
-		header = nullptr;
-		sequence = nullptr;
+		retval = 1;
 	}
 	sem_post(&(this->lock));
+	
+	return retval;
 }
 /*
 string FastaSequences::toJSON()

@@ -24,13 +24,36 @@ FindSSRsArgs::FindSSRsArgs(int argc, char* argv[])
 	this->num_threads = 1;
 	this->usage_statement = "findSSRs [options] <input-file.fasta> <output-file>";
 	this->species_1_fasta_file_name = "";
-	this->enumerated_ssrs = new unordered_set<string>();
+	this->enumerated_ssrs = new unordered_set<string>;
 	this->out_file_name = "";
 	
 	processArgs(argc, argv);
 }
+FindSSRsArgs::FindSSRsArgs(const FindSSRsArgs &args)
+{
+	this->deepCopy(args);
+}
+void FindSSRsArgs::deepCopy(const FindSSRsArgs &args)
+{
+	this->arguments_valid = args.isArgumentsValid();
+	this->quick_and_dirty = args.isQuickAndDirty();
+	this->min_nucleotide_length = args.getMinNucleotideLength();
+	this->min_ssr_length = args.getMinSSRLength();
+	this->max_ssr_length = args.getMaxSSRLength();
+	this->min_sequence_length = args.getMinSequenceLength();
+	this->max_sequence_length = args.getMaxSequenceLength();
+	this->min_repeats = args.getMinRepeats();
+	this->max_repeats = args.getMaxRepeats();
+	this->num_threads = args.getNumThreads();
+	this->usage_statement = args.getUsageStatement();
+	this->species_1_fasta_file_name = args.getSpecies1FastaFileName();
+	this->species_2_blastdb = args.getSpecies2BlastdbName();
+	this->enumerated_ssrs = args.getEnumeratedSSRs();
+	this->out_file_name = args.getOutFileName();
+}
 FindSSRsArgs::~FindSSRsArgs()
 {
+	this->enumerated_ssrs->clear();
 	delete this->enumerated_ssrs;
 }
 bool FindSSRsArgs::isArgumentsValid() const
@@ -84,6 +107,10 @@ string FindSSRsArgs::getUsageStatement() const
 string FindSSRsArgs::getSpecies1FastaFileName() const
 {
 	return this->species_1_fasta_file_name;
+}
+string FindSSRsArgs::getSpecies2BlastdbName() const
+{
+	return this->species_2_blastdb;
 }
 //string& FindSSRsArgs::getSpecies2Blastdb()
 //{
@@ -309,7 +336,7 @@ void FindSSRsArgs::processArgs(int argc, char* argv[])
 					strm << argv[i];
 					strm >> temp;
 					
-					if (temp >= 0)
+					if (temp >= 1)
 					{
 						this->num_threads = (uint32_t) temp;
 					}
@@ -387,4 +414,8 @@ string FindSSRsArgs::toString() const
 	}
 	output = output + " ]\nOut File Name=" + this->out_file_name + "\n";
 	return output;
+}
+void FindSSRsArgs::operator=(const FindSSRsArgs &args)
+{
+	this->deepCopy(args);
 }

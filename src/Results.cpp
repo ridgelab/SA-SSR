@@ -9,9 +9,9 @@
 
 using namespace std;
 
-Results::Results(const uint32_t &sequence_length, unordered_set<string>* enumerated_ssrs)
+Results::Results(const uint32_t &sequence_length, unordered_set<string>* _enumerated_ssrs)
 {
-	this->enumerated_ssrs = enumerated_ssrs;
+	this->enumerated_ssrs = _enumerated_ssrs;
 	initialize(sequence_length);
 }
 Results::~Results()
@@ -32,15 +32,18 @@ void Results::initialize(const uint32_t &sequence_length)
 	// shrink to fit???
 }
 //void  Results::processComparison(FindSSRsArgs* args, const string &sequence, const uint32_t &left, const uint32_t &right, const uint32_t &lcp)
-bool  Results::processComparison(FindSSRsArgs* args, const string &sequence, const uint32_t &left, const uint32_t &right, const uint32_t &lcp)
+bool  Results::processComparison(const FindSSRsArgs* args, const string &sequence, const uint32_t &left, const uint32_t &right, const uint32_t &lcp)
 {
 	assert (lcp > 0); // Technically lcp == 0 is okay, but completely useless.
+
+	//cerr << "left,right: " << left << "," << right << endl;
 
 	uint32_t k = (uint32_t ) abs((int) (right - left));
 	uint32_t r = lcp / k;
 	uint32_t p = min(left, right);
 
-	if (isSignificantSubSequence(args,k,r,p,lcp) == true)
+	//if (isSignificantSubSequence(args,k,r,p,lcp) == true)
+	if (isSignificantSubSequence(args,k,r) == true)
 	{
 		addResult(sequence,k,r,p);
 	}
@@ -51,7 +54,8 @@ bool  Results::processComparison(FindSSRsArgs* args, const string &sequence, con
 	
 	return true; // a.k.a., (you've found something) OR (r > 0 AND the subsequence was insignificant)
 }
-bool Results::isSignificantSubSequence(const FindSSRsArgs* args, const uint32_t &k, const uint32_t &r, const uint32_t &p, const uint32_t &lcp) const
+//bool Results::isSignificantSubSequence(const FindSSRsArgs* args, const uint32_t &k, const uint32_t &r, const uint32_t &p, const uint32_t &lcp) const
+bool Results::isSignificantSubSequence(const FindSSRsArgs* args, const uint32_t &k, const uint32_t &r) const
 {
 	if (r == 0) // check that there is actually a repeat occuring
 	{
@@ -104,48 +108,6 @@ uint32_t Results::enumeratedSSRFilter(const string &ssr)
 	}
 	return enumerated_ssrs->count(ssr);
 }
-//void Results::addBlastInfo(const string &blast_result)
-//{
-//	if (blast_result.size() == 0)
-//	{
-//		this->blast_result = "-";
-//	}
-//	else
-//	{
-//		bool first_time_through = true;
-//		uint32_t i = 0;
-//		while (i < blast_result.size())
-//		{
-//			if (first_time_through == false)
-//			{
-//				this->blast_result = this->blast_result + ",";
-//			}
-//			else
-//			{
-//				first_time_through = false;
-//			}
-//
-//			while (blast_result[i] != '\t')
-//			{
-//				i++;
-//			}
-//			i++;
-//
-//			while (blast_result[i] != '\t')
-//			{
-//				this->blast_result = this->blast_result + blast_result[i];
-//				i++;
-//			}
-//			
-//			while (blast_result[i] != '\n')
-//			{
-//				i++;
-//			}
-//			i++;
-//		}
-//	}
-//}
-//void Results::writeToFile(const string &header, const string &sequence, ofstream &out_file, const bool &doing_blast)
 void Results::writeToFile(const string &header, const string &sequence, OutputFile &out_file)
 {
 	string output;
@@ -156,10 +118,6 @@ void Results::writeToFile(const string &header, const string &sequence, OutputFi
 			if (isStartPositionAvailableAt(itr->getP()) == true)
 			{
 				itr->writeToFile(header, sequence, output);
-	//			if (doing_blast == true)
-	//			{
-	//				out_file << "\t" << this->blast_result;
-	//			}
 				output = output + "\n";
 
 				updateAvailableStartPositions(itr->getK(), itr->getR(), itr->getP());

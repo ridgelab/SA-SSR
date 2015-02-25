@@ -14,6 +14,7 @@ using namespace std;
 int main(int argc, char* argv[])
 {
 	FindSSRsArgs* args = new FindSSRsArgs(argc, argv);
+
 	FindSSRs find_ssrs(args);
 
 	int ret_val = find_ssrs.run();

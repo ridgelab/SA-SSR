@@ -7,34 +7,18 @@
 #include "../lib/sais-lite-lcp/sais.c"
 
 using namespace std;
-//void* consume(void* find_ssrs_vptr);
 
-//FindSSRs::FindSSRs(int argc, char* argv[])
 FindSSRs::FindSSRs(FindSSRsArgs* _args) : out_file(_args->getOutFileName(), "#Header\tSSR\tRepeats\tPosition\n")
 {
 	this->args = _args;
-	this->fasta_seqs = FastaSequences();
 	this->num_threads = this->args->getNumThreads();
-	//string name = this->args->getOutFileName();
-	//string header = "#Header\tSSR\tRepeats\tPosition\n";
-	//this->out_file(this->args->getOutFileName(),"#Header\tSSR\tRepeats\tPosition\n");
-	//this->out_file(this->args->getOutFileName(),header);
-	//this->out_file = OutputFile(this->args->getOutFileName(),header);
-	this->finished = false;
 	sem_init(&(this->n),0,0);
-	sem_init(&(this->e),0,(this->num_threads * 1.5));
+	sem_init(&(this->e),0,(this->num_threads * 2));
 }
 FindSSRs::~FindSSRs()
 {
-	delete this->args;
-}
-bool FindSSRs::isFinished() const
-{
-	return this->finished;
-}
-bool FindSSRs::isFastaSeqsEmpty()
-{
-	return this->fasta_seqs.empty();;
+	//sem_destroy(&(this->n));
+	//sem_destroy(&(this->e));
 }
 sem_t* FindSSRs::getN() const
 {
@@ -52,11 +36,13 @@ uint32_t FindSSRs::run()
 		return 1;
 	}
 
-	makeThreads();
+	uint32_t error = this->makeThreads(); // set up consumers
+
+	if (error) { return error; }
 
 	try
 	{
-		produceFromFasta();
+		this->processInput(); // produce (and consume if only main thread)
 	}
 	catch (string e)
 	{
@@ -64,87 +50,80 @@ uint32_t FindSSRs::run()
 		return 1;
 	}
 
-	//string header;
-	//string sequence;
+	this->joinAndForgetAllThreads(); // clean up consumers
+	
+	sleep(2); // give everything a chance to really finish.  For some reason, when I don't wait for 1-2 seconds, I miss one or two results in the output.
 
-	//while (!this->fasta_seqs.empty())
-	//{
-	//	//sem_wait(&(this->n));
-	//	this->fasta_seqs.get(header,sequence);
-	//	this->findSSRsInSequence(header, sequence);
-	//	sem_post(&(this->e));
-	//	header.clear();
-	//	sequence.clear();
-	//}
-
-	this->joinAndForgetAllThreads();
-
+	//int nval, eval = 0;
+	//sem_getvalue(&(this->n), &nval);
+	//sem_getvalue(&(this->e), &eval);
+	//cerr << "final n,e: " << nval << "," << eval << endl;
+	
 	return 0;
 }
-void FindSSRs::makeThreads()
+uint32_t FindSSRs::makeThreads()
 {
 	pthread_attr_t tattr;
 	pthread_attr_init(&tattr);
 	pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_JOINABLE);
 	
-	FindSSRs* find_ssrs_ptr = this;
-	for (uint32_t i = 0; i < this->num_threads; i++)
+	for (uint32_t i = 1; i < this->num_threads; i++)
 	{
 		pthread_t thread;
 		this->threads.push_back(thread);
 
-		if ( pthread_create(&thread,&tattr,&consume,(void*) find_ssrs_ptr) != 0 )
+		if ( pthread_create(&thread,&tattr,&consume,(void*) this) != 0 )
 		{
 			perror("creating threads");
-			exit(-1);
+			return errno;
 		}
 	}
 
 	pthread_attr_destroy(&tattr);
+
+	return 0;
 }
 void FindSSRs::joinAndForgetAllThreads()
 {
-	cerr << "joining threads" << endl;
 	for (uint32_t i = 0; i < this->threads.size(); i++)
 	{
-		cerr << "inside for loop" << endl;
-		if ( pthread_join(this->threads[i],NULL) != 0)
-		{
-			cerr << "inside if" << endl;
-			perror("joining threads");
-			cerr << "end if" << endl;
-		}
-		cerr << "end for loop" << endl;
-	}
-	cerr << "after for loop" << endl;
+		long status = 0L;
+		long* status_ptr = &status;
 
-	//this->threads.clear();
-	cerr << "after clear" << endl;
+		int joinerr = 0;
+		joinerr = pthread_join(this->threads[i],(void**) &status_ptr); //if ( pthread_join(this->threads[i],(void**) &status_ptr) != 0)
+		if ( joinerr != 0 && joinerr != EINVAL)
+		{
+			perror("joining thread");
+			//cerr << "joinerr,errno" << joinerr << "," << errno << endl;
+		}
+	}
+
+	this->threads.clear();
 }
-void FindSSRs::produceFromFasta()
+void FindSSRs::processInput() // produce
 {
 	ifstream species1_in_file;
 	species1_in_file.open(this->args->getSpecies1FastaFileName().c_str());
 
-//	if (this->args->doingBlast() == false) // We're not doing a blast
-//	{
-//		out_file << "#Header\tSSR\tRepeats\tPosition" << endl;
-//	}
-//	else // We're doing a blast
-//	{
-//		out_file << "#Sp-1-Head\tSSR\tRepeats\tPosition\tSp-2-Head" << endl;
-//	}
-
 	string header = "";
-
-	string line;
+	string line = "";
 	while (getline(species1_in_file, line))
 	{
 		if ( (line[0] != '>') && (line.size() >= this->args->getMinSequenceLength()) && (line.size() <= this->args->getMaxSequenceLength()) )
 		{
-			sem_wait(&(this->e)); 
-			this->fasta_seqs.add(header, line + "$");
-			sem_post(&(this->n));
+			line.append("$");
+			switch (this->num_threads)
+			{
+				case 1:
+					this->findSSRsInSequence(header, line);
+					break;
+				default:
+					sem_wait(&(this->e)); // decrease num empty slots
+					this->fasta_seqs.add(header, line); // fill a slot
+					sem_post(&(this->n)); // increase num occupied slots
+					break;
+			}
 		}
 		else
 		{
@@ -154,7 +133,18 @@ void FindSSRs::produceFromFasta()
 
 	species1_in_file.close();
 
-	this->finished = true;
+	switch (this->num_threads)
+	{
+		case 1:
+			break;
+		default:
+			this->fasta_seqs.dryUp(); // tell the FastaSequences object it will never recieve more input
+			for (uint32_t i = 1; i < this->num_threads; i++)
+			{
+				sem_post(&(this->n)); // tell the consumers there's another thing to consume (which will be the stop code)
+			}
+			break;
+	}
 }
 
 void FindSSRs::findSSRsInSequence(const string &header, const string &sequence)
@@ -214,13 +204,6 @@ void FindSSRs::findSSRsInSA(const string &header, const string &sequence, const 
 //		while ( (j < sequence.size()) && ( (this->args->isQuickAndDirty() == false) || (j < (i + 7)) ) );
 	}	
 
-//	if (this->args->doingBlast() == true && results.hasResults() == true)
-//	{
-//		results.addBlastInfo(blastAgainstSpecies2(header, sequence, this->args->getSpecies2Blastdb()));
-//	}
-
-	//results.writeToFile(header, sequence, out_file, this->args->doingBlast());
-	// TODO -- Protect the out_file with a semaphore
 	results.writeToFile(header, sequence, out_file);
 
 	//printExtraInformation(header, sequence, SA, LCP, out_file);
@@ -249,61 +232,25 @@ void FindSSRs::printExtraInformation(const string &header, const string &sequenc
 	}
 	out_file << "\n" << "\n";
 }
-//string FindSSRs::blastAgainstSpecies2(const string &header, const string &sequence, const string &blastdb)
-//{
-//	string s;
-//	char* cmd = (char*) ("echo -e \"" + header + "\n" + sequence.substr(0,sequence.size() - 1) + "\" | blastn -db " + blastdb + " -query - -outfmt 6").c_str();
-//	FILE* pipe = popen( cmd, "r" );
-//	
-//	if ( !pipe )
-//	{
-//		throw "ERROR: Pipe error.";
-//	}
-//
-//	char buffer[ 256 ];
-//	while( !feof( pipe ) )
-//	{
-//		if( fgets( buffer, 256, pipe ) != NULL )
-//		{
-//			s = s + buffer;
-//		}
-//	}
-//	pclose( pipe );
-//
-//	return s;
-//}
-void* FindSSRs::consume(void* find_ssrs_vptr)
-//void* consume(void* find_ssrs_vptr)
+void* FindSSRs::consume(void* find_ssrs_vptr) // void* (*)(void* )
 {
+	bool go = true;
 	FindSSRs* find_ssrs_ptr = (FindSSRs*) find_ssrs_vptr;
 	string header;
 	string sequence;
-	//while (!((FindSSRs*) find_ssrs)->isFinished())
-	while (!find_ssrs_ptr->isFinished() || !find_ssrs_ptr->isFastaSeqsEmpty())
+	while (go)
 	{
-		//sem_wait((((FindSSRs*) find_ssrs)->getN()));
-		sem_wait(find_ssrs_ptr->getN());
-
-		// get the header and sequence
-		//((FindSSRs*) find_ssrs)->fasta_seqs.get(header, sequence);
-		find_ssrs_ptr->fasta_seqs.get(header, sequence);
-
-		//if (header != nullptr && sequence != nullptr)
-		if (header != "" && sequence != "")
+		sem_wait(find_ssrs_ptr->getN()); // decrease num occupied slots
+		if (!find_ssrs_ptr->fasta_seqs.get(header, sequence)) // take
 		{
-			// find the ssrs in the file
-			//((FindSSRs*) find_ssrs)->findSSRsInSequence(header, sequence);
-			find_ssrs_ptr->findSSRsInSequence(header, sequence);
+			sem_post(find_ssrs_ptr->getE()); // increase num empty slots
+			find_ssrs_ptr->findSSRsInSequence(header, sequence); // consum (find the ssrs in the given sequence)
 		}
-
-		//sem_post((((FindSSRs*) find_ssrs)->getE()));
-		sem_post(find_ssrs_ptr->getE());
-		
-		header.clear();
-		sequence.clear();
+		else
+		{
+			go = false;
+		}
 	}
 
 	pthread_exit(NULL);
-
-	//return NULL;
 }
