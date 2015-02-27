@@ -12,7 +12,7 @@ using namespace std;
 FindSSRsArgs::FindSSRsArgs(int argc, char* argv[])
 {
 	this->arguments_valid = true;
-	this->quick_and_dirty = false;
+	this->ehaustive = false;
 	//this->doing_blast = false;
 	this->min_nucleotide_length = 16;
 	this->min_ssr_length = 4;
@@ -36,7 +36,7 @@ FindSSRsArgs::FindSSRsArgs(const FindSSRsArgs &args)
 void FindSSRsArgs::deepCopy(const FindSSRsArgs &args)
 {
 	this->arguments_valid = args.isArgumentsValid();
-	this->quick_and_dirty = args.isQuickAndDirty();
+	this->ehaustive = args.isExhaustive();
 	this->min_nucleotide_length = args.getMinNucleotideLength();
 	this->min_ssr_length = args.getMinSSRLength();
 	this->max_ssr_length = args.getMaxSSRLength();
@@ -60,9 +60,9 @@ bool FindSSRsArgs::isArgumentsValid() const
 {
 	return this->arguments_valid;
 }
-bool FindSSRsArgs::isQuickAndDirty() const
+bool FindSSRsArgs::isExhaustive() const
 {
-	return this->quick_and_dirty;;
+	return this->ehaustive;;
 }
 //bool FindSSRsArgs::doingBlast() const
 //{
@@ -124,9 +124,9 @@ string FindSSRsArgs::getOutFileName() const
 {
 	return this->out_file_name;
 }
-void FindSSRsArgs::setQuickAndDirtyStatus(bool quick_and_dirty)
+void FindSSRsArgs::setExhaustiveStatus(bool _ehaustive)
 {
-	this->quick_and_dirty = quick_and_dirty;
+	this->ehaustive = _ehaustive;
 }
 void FindSSRsArgs::setSpecies1FastaFileName(string species_1_fasta_file_name)
 {
@@ -172,10 +172,10 @@ void FindSSRsArgs::processArgs(int argc, char* argv[])
 				printHelp();
 				exit(0);
 			}
-			//else if (strcmp(argv[i],"--exhaustive") == 0 || strcmp(argv[i],"-e") == 0)
-			else if (strcmp(argv[i],"--quick") == 0 || strcmp(argv[i],"-q") == 0)
+			else if (strcmp(argv[i],"--exhaustive") == 0 || strcmp(argv[i],"-e") == 0)
+			//else if (strcmp(argv[i],"--quick") == 0 || strcmp(argv[i],"-q") == 0)
 			{
-				this->quick_and_dirty = true;
+				this->ehaustive = true;
 				expected_args = expected_args + 1; // 0=FindSSRsArgs, (1:argc-3)=( (-e || --exhaustive) && ((-s || --ssrs) SSR1,SSR2,SSR3,...,SSRn) && ((-b || --blast) species2-blastdb) && ((-n || --min-nucs) 16) && ((-m || --min-ssr-len) 4) && ((-M || --max-ssr-len) 8) ), (argc-2)=input_file.fasta, (argc-1)=output_file
 			}
 			else if (strcmp(argv[i],"--ssrs") == 0 || strcmp(argv[i],"-s") == 0)
@@ -192,21 +192,6 @@ void FindSSRsArgs::processArgs(int argc, char* argv[])
 					this->arguments_valid = false;
 				}
 			}
-//			else if (strcmp(argv[i], "--blast") == 0 || strcmp(argv[i], "-b") == 0)
-//			{
-//				expected_args = expected_args + 2; // 0=FindSSRsArgs, (1:argc-3)=( (-e || --exhaustive) && ((-s || --ssrs) SSR1,SSR2,SSR3,...,SSRn) && ((-b || --blast) species2-blastdb) && ((-n || --min-nucs) 16) && ((-m || --min-ssr-len) 4) && ((-M || --max-ssr-len) 8) ), (argc-2)=input_file.fasta, (argc-1)=output_file
-//
-//				if (i < (uint32_t) (argc - 3)) // as long as there is more space for the input and output files...
-//				{
-//					i++;
-//					this->doing_blast = true;
-//					this->species_2_blastdb = argv[i];
-//				}
-//				else
-//				{
-//					this->arguments_valid = false;
-//				}
-//			}
 			else if (strcmp(argv[i], "--min-nucs") == 0 || strcmp(argv[i], "-n") == 0)
 			{
 				expected_args = expected_args + 2; // 0=FindSSRsArgs, (1:argc-3)=( (-e || --exhaustive) && ((-s || --ssrs) SSR1,SSR2,SSR3,...,SSRn) && ((-b || --blast) species2-blastdb) && ((-n || --min-nucs) 16) && ((-m || --min-ssr-len) 4) && ((-M || --max-ssr-len) 8) ), (argc-2)=input_file.fasta, (argc-1)=output_file
@@ -380,31 +365,33 @@ void FindSSRsArgs::printHelp() const
 	cerr << "\t\tBAD EXAMPLE:\n\t\t\t>seq1\n\t\t\tagctgcgcgtatatacgtacgactcgtatgcagtc.......\n\t\t\t>seq2\n\t\t\tgAtCGATcgatgcTAGcgATGcTACTaGTCTaTCGaTGca.......\n\t\t\t>seq3\n\t\t\tTCATTTTAGCTAGCTAGCTAGTCGATCTATCATCGATCGTA\n\t\t\tCGCGCGCGATCGATCGATGCTAGTCGACAACGTACGACTAG\n\t\t\tACGTACGTAGCATCGATGCATCGATCGTAGCACGTGTTTTT\n\t\t\tGCTAGCTAGCTGATCGTAGTGCATCGACTACGTAGCTAGCT\n\t\t\t...\n\t\t\t...\n\t\t\t..." << endl << endl;
 	cerr << "\t<output_file>" << endl << "\t\tThe name of the output file." << endl << endl;
 	cerr << "OPTIONAL:" << endl << endl;
+	cerr << "\t-e, --exhaustive" << endl << "\t\tTake an exhaustive approach to finding the SSRs.  By default a quick approach is taken.  Note that all meaninful SSRs will be found within the\n\t\tuser-specified constraints using the exhaustive approach.  Although unlikely, the exhuastive approach could take (worst-case) order n^2\n\t\ttime (if, for example, your data were primarily or entirely one nucleotide OR you specify the minimum base ssr length to be 1 or 2).\n\t\tFor many cases, the default approach is sufficient and will save (possibly significant) time." << endl << endl;
 	cerr << "\t-h, --help" << endl << "\t\tShow this help and exit.  All other arguments will be ignored." << endl << endl;
 	cerr << "\t-l, --min-seq-len" << endl << "\t\tThe min length of a sequence required before finding SSRs will be attempted. [default: 100]" << endl << endl;
 	cerr << "\t-L, --max-seq-len" << endl << "\t\tThe max length of a sequence after which finding SSRs will not be attempted. [default: 1500]" << endl << endl;
 	cerr << "\t-m, --min-ssr-len" << endl << "\t\tThe min number of nucleotides in the base of the SSR (e.g., ACGTACGT has base-ssr-len of 4, AAAAAAAAAAAAAAAAAA has base-ssr-len of 1). [default: 4]" << endl << endl;
 	cerr << "\t-M, --max-ssr-len" << endl << "\t\tThe max number of nucleotides in the base of the SSR (e.g., ACGTACGT has base-ssr-len of 4, AAAAAAAAAAAAAAAAAA has base-ssr-len of 1). [default: 8]" << endl << endl;
 	cerr << "\t-n, --min-nucs" << endl << "\t\tThe min number of nucleotides in the entire SSR (e.g., ACGTACGT has 8 nucleotides, AAAAAAAAAAAAAAAAAA has 18 nucleotides). [default: 16]" << endl << endl;
-	cerr << "\t-q, --quick" << endl << "\t\tTake a faster, less careful approach to finding the SSRs.  By default an exhaustive approach is taken; however, if this flag is specified\n\t\ta \"quick and dirty\" approach will be followed.  Note that all meaninful SSRs will be found within the user-specified constraints using the exhaustive approach.\n\t\tAlthough unlikely, the exhuastive approach could take (worst-case) order n^2 time (if, for example, your data were primarily or entirely one nucleotide OR you specify the minimum base ssr length to be 1 or 2).\n\t\tFor many cases, the \"quick and dirty\" approach is sufficient and will save (possibly significant) time." << endl << endl;
+	//cerr << "\t-q, --quick" << endl << "\t\tTake a faster, less careful approach to finding the SSRs.  By default an exhaustive approach is taken; however, if this flag is specified\n\t\ta \"quick and dirty\" approach will be followed.  Note that all meaninful SSRs will be found within the user-specified constraints using the exhaustive approach.\n\t\tAlthough unlikely, the exhuastive approach could take (worst-case) order n^2 time (if, for example, your data were primarily or entirely one nucleotide OR you specify the minimum base ssr length to be 1 or 2).\n\t\tFor many cases, the \"quick and dirty\" approach is sufficient and will save (possibly significant) time." << endl << endl;
 	cerr << "\t-r, --min-repeats" << endl << "\t\tThe min number of repeats in the entire SSR (e.g., ACGTACGT has 2 repeats, AAAAAAAAAAAAAAAAAA has 18 repeats). [default: 1]" << endl << endl;
 	cerr << "\t-R, --max-repeats" << endl << "\t\tThe max number of repeats in the entire SSR (e.g., ACGTACGT has 2 repeats, AAAAAAAAAAAAAAAAAA has 18 repeats). [default: none (technically: 4,294,967,295)]" << endl << endl;
 	cerr << "\t-s, --ssrs" << endl << "\t\tEnumerated base SSRs to filter output by.  If an SSR is found of a different base, it will be discarded.\n\t\tThe enumerated SSRs should take the form of an UPPERCASE, comma-separated list: BASE-SSR1,BASE-SSR2,...,BASE-SSRn (e.g., AC,GGTCA,TCA,TTCCGAAGGC)." << endl << endl;
+	cerr << "\t-t, --num-threads" << endl << "\t\tThe number of threads to use. [default: 1]" << endl << endl;
 	cerr << "DEPENDENCIES:" << endl << endl;
 	cerr << "\tNone." << endl << endl;
 	cerr << "NOTE:" << endl << endl;
-	cerr << "\t--We compiled using gcc 4.9.0.  Your compiler must support c++11." << endl << endl;
+	cerr << "\t--We compiled using gcc 4.9.0.  Your compiler must support C++11." << endl << endl;
 }
 string FindSSRsArgs::toString() const
 {
 	string output = "FindSSRsArgs\n============\n";
 	string temp;
 	stringstream strm;
-	strm << boolalpha << this->arguments_valid << " " << this->quick_and_dirty << " ";
+	strm << boolalpha << this->arguments_valid << " " << this->ehaustive << " ";
 	strm >> temp;
 	output = output + "Valid Arguments=" + temp;
 	strm >> temp;
-	output = output + "\nQuick & Dirty=" + temp;
+	output = output + "\nExhaustive=" + temp;
 	output = output + "\nUsage Statement=" + this->usage_statement;
 	output = output + "\nSpecies 1 Fasta File Name=" + this->species_1_fasta_file_name;
 	output = output + "\nEnumerated SSRs[ ";

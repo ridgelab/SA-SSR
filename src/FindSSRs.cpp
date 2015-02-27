@@ -196,7 +196,8 @@ void FindSSRs::findSSRsInSA(const string &header, const string &sequence, const 
 			j++;
 		}
 		//while (j < sequence.size() && this->args->isQuickAndDirty() == false);
-		while ( (j < sequence.size()) && ( (this->args->isQuickAndDirty() == false) || (stop == false) ) );
+		while ( (j < sequence.size()) && ( this->args->isExhaustive() || !stop ) );
+		//while ( (j < sequence.size()) && ( (this->args->isQuickAndDirty() == false) || (stop == false) ) );
 //		while ( (j < sequence.size()) && ( (this->args->isQuickAndDirty() == false) || (j < (i + 3)) ) );
 //		while ( (j < sequence.size()) && ( (this->args->isQuickAndDirty() == false) || (j < (i + 4)) ) );
 //		while ( (j < sequence.size()) && ( (this->args->isQuickAndDirty() == false) || (j < (i + 5)) ) );

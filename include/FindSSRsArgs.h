@@ -19,7 +19,7 @@ class FindSSRsArgs
 {
 private:
 	bool arguments_valid; // default true
-	bool quick_and_dirty; // default true 
+	bool ehaustive; // default false
 	//bool doing_blast; // default false
 	uint32_t min_nucleotide_length; // default 16
 	uint32_t min_ssr_length; // default 4
@@ -41,7 +41,7 @@ public:
 	~FindSSRsArgs();
 	void deepCopy(const FindSSRsArgs &args);
 	bool isArgumentsValid() const;
-	bool isQuickAndDirty() const;
+	bool isExhaustive() const;
 	//bool doingBlast() const;
 	uint32_t getMinNucleotideLength() const;
 	uint32_t getMinSSRLength() const;
@@ -57,7 +57,7 @@ public:
 	//string& getSpecies2Blastdb();
 	unordered_set<string>* getEnumeratedSSRs() const;
 	string getOutFileName() const;
-	void setQuickAndDirtyStatus(bool quick_and_dirty);
+	void setExhaustiveStatus(bool _ehaustive);
 	void setSpecies1FastaFileName(string species_1_fasta_file_name);
 	void addEnumeratedSSR(string enumerated_ssr);
 	void addEnumeratedSSRs(string enumerated_ssrs_comma_separated);
