@@ -53,13 +53,18 @@ void SingleResult::setAll(uint32_t k, uint32_t r, uint32_t p)
 	this->r = r;
 	this->p = p;
 }
-void SingleResult::writeToFile(const string &header, const string &sequence, string &output) const
+void SingleResult::writeToFile(bool write_additional_output, const string &header, const string &sequence, string &output) const
 {
 	string temp;
 	stringstream strm;
 	strm << (this->r + 1) << " " << this->p;
 	strm >> temp;
-	output = output + header.substr(1,header.size() - 1) + "\t" + sequence.substr(this->p,this->k) + "\t" + temp; // header\tSSR\tRepeats
+	output = output + header.substr(1,header.size() - 1); // header
+	if (write_additional_output)
+	{
+		output = output + "\t" + sequence.substr(0,sequence.size() - 1); // \tsequence
+	}
+	output = output + "\t" + sequence.substr(this->p,this->k) + "\t" + temp; // \tSSR\tRepeats
 	strm >> temp;
 	output = output + "\t" + temp; // \tPosition
 }

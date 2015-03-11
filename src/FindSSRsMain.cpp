@@ -15,9 +15,17 @@ int main(int argc, char* argv[])
 {
 	FindSSRsArgs* args = new FindSSRsArgs(argc, argv);
 
-	FindSSRs find_ssrs(args);
-
-	int ret_val = find_ssrs.run();
+	int ret_val = 0;
+	if (args->isArgumentsValid())
+	{
+		FindSSRs find_ssrs(args);
+		ret_val = find_ssrs.run();
+	}
+	else
+	{
+		args->printHelp();
+		ret_val = 1;
+	}
 
 	delete args;
 

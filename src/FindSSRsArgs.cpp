@@ -12,6 +12,7 @@ using namespace std;
 FindSSRsArgs::FindSSRsArgs(int argc, char* argv[])
 {
 	this->arguments_valid = true;
+	this->additional_output = false;
 	this->ehaustive = false;
 	//this->doing_blast = false;
 	this->min_nucleotide_length = 16;
@@ -26,6 +27,7 @@ FindSSRsArgs::FindSSRsArgs(int argc, char* argv[])
 	this->species_1_fasta_file_name = "";
 	this->enumerated_ssrs = new unordered_set<string>;
 	this->out_file_name = "";
+	this->out_file_header = "#Header\tSSR\tRepeats\tPosition\n";
 	
 	processArgs(argc, argv);
 }
@@ -36,6 +38,7 @@ FindSSRsArgs::FindSSRsArgs(const FindSSRsArgs &args)
 void FindSSRsArgs::deepCopy(const FindSSRsArgs &args)
 {
 	this->arguments_valid = args.isArgumentsValid();
+	this->additional_output = args.isAdditionalOutput();
 	this->ehaustive = args.isExhaustive();
 	this->min_nucleotide_length = args.getMinNucleotideLength();
 	this->min_ssr_length = args.getMinSSRLength();
@@ -47,9 +50,10 @@ void FindSSRsArgs::deepCopy(const FindSSRsArgs &args)
 	this->num_threads = args.getNumThreads();
 	this->usage_statement = args.getUsageStatement();
 	this->species_1_fasta_file_name = args.getSpecies1FastaFileName();
-	this->species_2_blastdb = args.getSpecies2BlastdbName();
+	//this->species_2_blastdb = args.getSpecies2BlastdbName();
 	this->enumerated_ssrs = args.getEnumeratedSSRs();
 	this->out_file_name = args.getOutFileName();
+	this->out_file_header = args.getOutFileHeader();
 }
 FindSSRsArgs::~FindSSRsArgs()
 {
@@ -59,6 +63,10 @@ FindSSRsArgs::~FindSSRsArgs()
 bool FindSSRsArgs::isArgumentsValid() const
 {
 	return this->arguments_valid;
+}
+bool FindSSRsArgs::isAdditionalOutput() const
+{
+	return this->additional_output;
 }
 bool FindSSRsArgs::isExhaustive() const
 {
@@ -108,10 +116,10 @@ string FindSSRsArgs::getSpecies1FastaFileName() const
 {
 	return this->species_1_fasta_file_name;
 }
-string FindSSRsArgs::getSpecies2BlastdbName() const
-{
-	return this->species_2_blastdb;
-}
+//string FindSSRsArgs::getSpecies2BlastdbName() const
+//{
+//	return this->species_2_blastdb;
+//}
 //string& FindSSRsArgs::getSpecies2Blastdb()
 //{
 //	return this->species_2_blastdb;
@@ -123,6 +131,10 @@ unordered_set<string>* FindSSRsArgs::getEnumeratedSSRs() const
 string FindSSRsArgs::getOutFileName() const
 {
 	return this->out_file_name;
+}
+string FindSSRsArgs::getOutFileHeader() const
+{
+	return this->out_file_header;
 }
 void FindSSRsArgs::setExhaustiveStatus(bool _ehaustive)
 {
@@ -163,7 +175,7 @@ void FindSSRsArgs::setOutFileName(string out_file_name)
 void FindSSRsArgs::processArgs(int argc, char* argv[])
 {
 	uint32_t expected_args = 3; // 0=FindSSRsArgs, 1=input_file.fasta, 2=output_file
-	if (argc > 1)
+	if (argc > 2)
 	{
 		for (uint32_t i = 0; i < (uint32_t) argc; i++)
 		{
@@ -171,6 +183,12 @@ void FindSSRsArgs::processArgs(int argc, char* argv[])
 			{
 				printHelp();
 				exit(0);
+			}
+			else if (strcmp(argv[i],"--additional-output") == 0 || strcmp(argv[i],"-a") == 0)
+			{
+				this->additional_output = true;
+				this->out_file_header = "#Header\tSequence\tSSR\tRepeats\tPosition\n";
+				expected_args = expected_args + 1;
 			}
 			else if (strcmp(argv[i],"--exhaustive") == 0 || strcmp(argv[i],"-e") == 0)
 			//else if (strcmp(argv[i],"--quick") == 0 || strcmp(argv[i],"-q") == 0)
@@ -358,13 +376,14 @@ void FindSSRsArgs::printHelp() const
 	cerr << "VERSION:" << endl << endl;
 	cerr << "\t0.1 alpha" << endl << endl;
 	cerr << "USAGE:" << endl << endl;
-	cerr << "\t" << this->usage_statement << "\t(all options must come before the input and output files, which must also be in order)" << endl << endl;
+	cerr << "\t" << this->usage_statement << "\t(options may be in any order, but must come before the input and output files)" << endl << endl;
 	cerr << "REQUIRED:" << endl << endl;
-	cerr << "\t<input-file>" << endl << "\t\tThe input fasta file.  All sequences must contain only UPPERCASE nucleotides.  All sequences must be on only 1 line." << endl << endl;
-	cerr << "\t\tGOOD EXAMPLE:\n\t\t\t>seq1\n\t\t\tAGCTGCGCGTATATACGTACGACTCGTATGCAGTC.......\n\t\t\t>seq2\n\t\t\tGATCGATCGATGCTAGCGATGCTACTAGTCTATCGATGCA.......\n\t\t\t...\n\t\t\t...\n\t\t\t..." << endl << endl;
-	cerr << "\t\tBAD EXAMPLE:\n\t\t\t>seq1\n\t\t\tagctgcgcgtatatacgtacgactcgtatgcagtc.......\n\t\t\t>seq2\n\t\t\tgAtCGATcgatgcTAGcgATGcTACTaGTCTaTCGaTGca.......\n\t\t\t>seq3\n\t\t\tTCATTTTAGCTAGCTAGCTAGTCGATCTATCATCGATCGTA\n\t\t\tCGCGCGCGATCGATCGATGCTAGTCGACAACGTACGACTAG\n\t\t\tACGTACGTAGCATCGATGCATCGATCGTAGCACGTGTTTTT\n\t\t\tGCTAGCTAGCTGATCGTAGTGCATCGACTACGTAGCTAGCT\n\t\t\t...\n\t\t\t...\n\t\t\t..." << endl << endl;
-	cerr << "\t<output_file>" << endl << "\t\tThe name of the output file." << endl << endl;
+	cerr << "\t<input-file>" << endl << "\t\tThe input fasta file. Header lines must contain no tabs. All sequences must contain only UPPERCASE nucleotides. This is a positional argument." << endl << endl;
+	//cerr << "\t\tGOOD EXAMPLE:\n\t\t\t>seq1\n\t\t\tAGCTGCGCGTATATACGTACGACTCGTATGCAGTC.......\n\t\t\t>seq2\n\t\t\tGATCGATCGATGCTAGCGATGCTACTAGTCTATCGATGCA.......\n\t\t\t...\n\t\t\t...\n\t\t\t..." << endl << endl;
+	//cerr << "\t\tBAD EXAMPLE:\n\t\t\t>seq1\n\t\t\tagctgcgcgtatatacgtacgactcgtatgcagtc.......\n\t\t\t>seq2\n\t\t\tgAtCGATcgatgcTAGcgATGcTACTaGTCTaTCGaTGca.......\n\t\t\t>seq3\n\t\t\tTCATTTTAGCTAGCTAGCTAGTCGATCTATCATCGATCGTA\n\t\t\tCGCGCGCGATCGATCGATGCTAGTCGACAACGTACGACTAG\n\t\t\tACGTACGTAGCATCGATGCATCGATCGTAGCACGTGTTTTT\n\t\t\tGCTAGCTAGCTGATCGTAGTGCATCGACTACGTAGCTAGCT\n\t\t\t...\n\t\t\t...\n\t\t\t..." << endl << endl;
+	cerr << "\t<output_file>" << endl << "\t\tThe name of the output file. This is a positional argument." << endl << endl;
 	cerr << "OPTIONAL:" << endl << endl;
+	cerr << "\t-a, --additional-output" << endl << "\t\tAdd an additional column, containing the full sequence, to the output file.  This column will be added after the header column." << endl << endl;
 	cerr << "\t-e, --exhaustive" << endl << "\t\tTake an exhaustive approach to finding the SSRs.  By default a quick approach is taken.  Note that all meaninful SSRs will be found within the\n\t\tuser-specified constraints using the exhaustive approach.  Although unlikely, the exhuastive approach could take (worst-case) order n^2\n\t\ttime (if, for example, your data were primarily or entirely one nucleotide OR you specify the minimum base ssr length to be 1 or 2).\n\t\tFor many cases, the default approach is sufficient and will save (possibly significant) time." << endl << endl;
 	cerr << "\t-h, --help" << endl << "\t\tShow this help and exit.  All other arguments will be ignored." << endl << endl;
 	cerr << "\t-l, --min-seq-len" << endl << "\t\tThe min length of a sequence required before finding SSRs will be attempted. [default: 100]" << endl << endl;

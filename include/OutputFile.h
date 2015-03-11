@@ -25,7 +25,7 @@ private:
 	void setUp();
 	void setUp(const string &file_name);
 	void writeHeader(const char* header);
-	//void writeHeader(const string &header);
+	void writeHeader(const string &header);
 	//void writeHeader( string &header);
 	void writeHeaders(const vector<string> &headers);
 
@@ -34,7 +34,7 @@ public:
 	//OutputFile(const OutputFile &output_file);
 	OutputFile(const string &file_name);
 	OutputFile(const string &file_name, const char* header);
-	//OutputFile(const string &file_name, const string &header);
+	OutputFile(const string &file_name, const string &header);
 	//OutputFile(const string &file_name, string &header);
 	OutputFile(const string &file_name, const vector<string> &headers);
 	~OutputFile();

@@ -108,7 +108,7 @@ uint32_t Results::enumeratedSSRFilter(const string &ssr)
 	}
 	return enumerated_ssrs->count(ssr);
 }
-void Results::writeToFile(const string &header, const string &sequence, OutputFile &out_file)
+void Results::writeToFile(bool write_additional_output, const string &header, const string &sequence, OutputFile &out_file)
 {
 	string output;
 	if (!results.empty())
@@ -117,7 +117,7 @@ void Results::writeToFile(const string &header, const string &sequence, OutputFi
 		{
 			if (isStartPositionAvailableAt(itr->getP()) == true)
 			{
-				itr->writeToFile(header, sequence, output);
+				itr->writeToFile(write_additional_output, header, sequence, output);
 				output = output + "\n";
 
 				updateAvailableStartPositions(itr->getK(), itr->getR(), itr->getP());
@@ -126,7 +126,12 @@ void Results::writeToFile(const string &header, const string &sequence, OutputFi
 	}
 	else
 	{
-		output = output + header.substr(1,string::npos) + "\t-\t0\t0\n";
+		output = output + header.substr(1,string::npos);
+		if (write_additional_output)
+		{
+			output = output + "\t-";
+		}
+		output = output + "\t-\t0\t0\n";
 	}
 	out_file << output;
 }

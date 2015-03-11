@@ -20,8 +20,12 @@ OutputFile::OutputFile(const string &file_name)
 	this->setUp(file_name);
 }
 OutputFile::OutputFile(const string &file_name, const char* header)
-//OutputFile::OutputFile(const string &file_name, const string &header)
 //OutputFile::OutputFile(const string &file_name, string &header)
+{
+	this->setUp(file_name);
+	this->writeHeader(header);
+}
+OutputFile::OutputFile(const string &file_name, const string &header)
 {
 	this->setUp(file_name);
 	this->writeHeader(header);
@@ -87,8 +91,13 @@ void OutputFile::changeFile(const string &file_name, const vector<string> &heade
 	this->writeHeaders(headers);
 }
 void OutputFile::writeHeader(const char* header)
-//void OutputFile::writeHeader(const string &header)
 //void OutputFile::writeHeader(string &header)
+{
+	sem_wait(&(this->lock));
+	this->out_file << header;
+	sem_post(&(this->lock));
+}
+void OutputFile::writeHeader(const string &header)
 {
 	sem_wait(&(this->lock));
 	this->out_file << header;

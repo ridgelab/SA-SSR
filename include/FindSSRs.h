@@ -44,6 +44,7 @@ public:
 	uint32_t makeThreads();
 	void joinAndForgetAllThreads();
 	void processInput();
+	void processSequence(const string &header, string &sequence);
 	void findSSRsInSequence(const string &header, const string &sequence);
 	void findSSRsInSA(const string &header, const string &sequence, const int *SA, const int *LCP);
 	void printExtraInformation(const string &header, const string &sequence, const int *SA, const int *LCP);

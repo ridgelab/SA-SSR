@@ -8,7 +8,7 @@
 
 using namespace std;
 
-FindSSRs::FindSSRs(FindSSRsArgs* _args) : out_file(_args->getOutFileName(), "#Header\tSSR\tRepeats\tPosition\n")
+FindSSRs::FindSSRs(FindSSRsArgs* _args) : out_file(_args->getOutFileName(), _args->getOutFileHeader())
 {
 	this->args = _args;
 	this->num_threads = this->args->getNumThreads();
@@ -107,29 +107,47 @@ void FindSSRs::processInput() // produce
 	species1_in_file.open(this->args->getSpecies1FastaFileName().c_str());
 
 	string header = "";
+	string sequence = "";
 	string line = "";
 	while (getline(species1_in_file, line))
 	{
-		if ( (line[0] != '>') && (line.size() >= this->args->getMinSequenceLength()) && (line.size() <= this->args->getMaxSequenceLength()) )
+		if (line.size() > 0)
 		{
-			line.append("$");
-			switch (this->num_threads)
+			if (line[0] != '>')
 			{
-				case 1:
-					this->findSSRsInSequence(header, line);
-					break;
-				default:
-					sem_wait(&(this->e)); // decrease num empty slots
-					this->fasta_seqs.add(header, line); // fill a slot
-					sem_post(&(this->n)); // increase num occupied slots
-					break;
+				sequence = sequence + line;
+			}
+			else
+			{
+				this->processSequence(header,sequence);
+
+				header = line;
+				sequence = "";
 			}
 		}
-		else
-		{
-			header = line;
-		}
+		
+		//if ( (line[0] != '>') && (line.size() >= this->args->getMinSequenceLength()) && (line.size() <= this->args->getMaxSequenceLength()) )
+		//{
+		//	line.append("$");
+		//	switch (this->num_threads)
+		//	{
+		//		case 1:
+		//			this->findSSRsInSequence(header, line);
+		//			break;
+		//		default:
+		//			sem_wait(&(this->e)); // decrease num empty slots
+		//			this->fasta_seqs.add(header, line); // fill a slot
+		//			sem_post(&(this->n)); // increase num occupied slots
+		//			break;
+		//	}
+		//}
+		//else
+		//{
+		//	header = line;
+		//}
 	}
+	
+	this->processSequence(header,sequence); // catch the last sequence
 
 	species1_in_file.close();
 
@@ -146,7 +164,24 @@ void FindSSRs::processInput() // produce
 			break;
 	}
 }
-
+void FindSSRs::processSequence(const string &header, string &sequence)
+{
+	if ( (sequence.size() >= this->args->getMinSequenceLength()) && (sequence.size() <= this->args->getMaxSequenceLength()) )
+	{
+		sequence.append("$");
+		switch (this->num_threads)
+		{
+			case 1:
+				this->findSSRsInSequence(header, sequence);
+				break;
+			default:
+				sem_wait(&(this->e)); // decrease num empty slots
+				this->fasta_seqs.add(header, sequence); // fill a slot
+				sem_post(&(this->n)); // increase num occupied slots
+				break;
+		}
+	}
+}
 void FindSSRs::findSSRsInSequence(const string &header, const string &sequence)
 {
 	// prepare all input for sais (saca & lcpca)
@@ -205,7 +240,7 @@ void FindSSRs::findSSRsInSA(const string &header, const string &sequence, const 
 //		while ( (j < sequence.size()) && ( (this->args->isQuickAndDirty() == false) || (j < (i + 7)) ) );
 	}	
 
-	results.writeToFile(header, sequence, out_file);
+	results.writeToFile(this->args->isAdditionalOutput(),header, sequence, out_file);
 
 	//printExtraInformation(header, sequence, SA, LCP, out_file);
 }
