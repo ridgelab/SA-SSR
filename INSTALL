@@ -1,0 +1,3 @@
+To install findSSRs, simply type `make'.  Your compiler must support C++11.
+
+To uninstall, type `make clean'.
