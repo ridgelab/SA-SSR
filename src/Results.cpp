@@ -94,8 +94,8 @@ void  Results::addResult(const string &sequence, const uint32_t &k, const uint32
 void  Results::updateAvailableStartPositions(uint32_t k, uint32_t r, uint32_t p)
 {
 	//for (uint32_t i = (p + k); i < available_start_positions.size() && i < (p + k * r); i++)
-	for (uint32_t i = p; i < available_start_positions.size() && i < (p + k * r); i++)
-	//for (uint32_t i = p; i < available_start_positions.size() && i < (p + k * (r + 1)); i++)
+	for (uint32_t i = p; i < available_start_positions.size() && i < (p + k * (r + 1)); i++)
+	//for (uint32_t i = p; i < available_start_positions.size() && i < (p + k * r); i++)
 	{
 		available_start_positions[i] = false;
 	}
