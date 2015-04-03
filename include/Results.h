@@ -42,6 +42,6 @@ public:
 	void addResult(const string &sequence, const uint32_t &k, const uint32_t &r, const uint32_t &p);
 	void updateAvailableStartPositions(uint32_t k, uint32_t r, uint32_t p);
 	uint32_t enumeratedSSRFilter(const string &ssr);
-	void writeToFile(bool write_additional_output, const string &header, const string &sequence, OutputFile &out_file);
+	void writeToFile(bool include_zero, bool write_additional_output, const string &header, const string &sequence, OutputFile &out_file);
 	string toString(); 
 };

@@ -1,3 +1,6 @@
-To install findSSRs, simply type `make'.  Your compiler must support C++11.
+INSTALLATION INSTRUCTIONS
+=========================
+
+To install findSSRs, simply type `make'. The binary will be in the `bin' directory. Your compiler must support C++11.
 
 To uninstall, type `make clean'.

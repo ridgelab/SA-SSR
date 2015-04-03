@@ -20,6 +20,7 @@ class FindSSRsArgs
 private:
 	bool arguments_valid; // default true
 	bool additional_output; // default false
+	bool include_zero; // default false
 	bool ehaustive; // default false
 	//bool doing_blast; // default false
 	uint32_t min_nucleotide_length; // default 16
@@ -45,6 +46,7 @@ public:
 	bool isArgumentsValid() const;
 	bool isAdditionalOutput() const;
 	bool isExhaustive() const;
+	bool isIncludeZero() const;
 	//bool doingBlast() const;
 	uint32_t getMinNucleotideLength() const;
 	uint32_t getMinSSRLength() const;

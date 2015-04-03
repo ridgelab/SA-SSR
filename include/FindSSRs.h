@@ -20,6 +20,7 @@
 #include "SingleResult.h"
 #include "FastaSequences.h"
 #include "OutputFile.h"
+#include "ProgressMeter.h"
 
 using namespace std;
 
@@ -34,6 +35,7 @@ private:
 	OutputFile out_file; // thread-safe class
 	sem_t n; // full space (for the consumer to take) in the buffer...if n increases/decreases, e should decrease/increase
 	sem_t e; // empty space (for the producer to fill) in the buffer...if e increases/decreases, n should decrease/increase
+	ProgressMeter progress_bar;
 
 public:
 	FindSSRs(FindSSRsArgs* _args);

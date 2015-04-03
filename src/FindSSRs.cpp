@@ -8,12 +8,16 @@
 
 using namespace std;
 
+static
+uint32_t calculateDataSizeFromFasta(ifstream &fasta);
+
 FindSSRs::FindSSRs(FindSSRsArgs* _args) : out_file(_args->getOutFileName(), _args->getOutFileHeader())
 {
 	this->args = _args;
 	this->num_threads = this->args->getNumThreads();
 	sem_init(&(this->n),0,0);
 	sem_init(&(this->e),0,(this->num_threads * 2));
+	this->progress_bar = ProgressMeter();
 }
 FindSSRs::~FindSSRs()
 {
@@ -50,9 +54,9 @@ uint32_t FindSSRs::run()
 		return 1;
 	}
 
-	this->joinAndForgetAllThreads(); // clean up consumers
+	//this->joinAndForgetAllThreads(); // clean up consumers
 	
-	sleep(2); // give everything a chance to really finish.  For some reason, when I don't wait for 1-2 seconds, I miss one or two results in the output.
+	//sleep(2); // give everything a chance to really finish.  For some reason, when I don't wait for 1-2 seconds, I miss one or two results in the output.
 
 	//int nval, eval = 0;
 	//sem_getvalue(&(this->n), &nval);
@@ -106,6 +110,9 @@ void FindSSRs::processInput() // produce
 	ifstream species1_in_file;
 	species1_in_file.open(this->args->getSpecies1FastaFileName().c_str());
 
+	// init (set the data_size of) the progress bar
+	this->progress_bar.initialize(calculateDataSizeFromFasta(species1_in_file));
+
 	string header = "";
 	string sequence = "";
 	string line = "";
@@ -115,7 +122,10 @@ void FindSSRs::processInput() // produce
 		{
 			if (line[0] != '>')
 			{
-				sequence = sequence + line;
+				for (uint32_t i = 0; i < line.size(); ++i)
+				{
+					sequence = sequence + (char) toupper(line[i]);
+				}
 			}
 			else
 			{
@@ -166,6 +176,8 @@ void FindSSRs::processInput() // produce
 }
 void FindSSRs::processSequence(const string &header, string &sequence)
 {
+	uint32_t seq_size = sequence.size();
+
 	if ( (sequence.size() >= this->args->getMinSequenceLength()) && (sequence.size() <= this->args->getMaxSequenceLength()) )
 	{
 		sequence.append("$");
@@ -181,6 +193,7 @@ void FindSSRs::processSequence(const string &header, string &sequence)
 				break;
 		}
 	}
+	this->progress_bar.updateProgress(seq_size);
 }
 void FindSSRs::findSSRsInSequence(const string &header, const string &sequence)
 {
@@ -240,7 +253,7 @@ void FindSSRs::findSSRsInSA(const string &header, const string &sequence, const 
 //		while ( (j < sequence.size()) && ( (this->args->isQuickAndDirty() == false) || (j < (i + 7)) ) );
 	}	
 
-	results.writeToFile(this->args->isAdditionalOutput(),header, sequence, out_file);
+	results.writeToFile(this->args->isIncludeZero(), this->args->isAdditionalOutput(),header, sequence, out_file);
 
 	//printExtraInformation(header, sequence, SA, LCP, out_file);
 }
@@ -280,7 +293,7 @@ void* FindSSRs::consume(void* find_ssrs_vptr) // void* (*)(void* )
 		if (!find_ssrs_ptr->fasta_seqs.get(header, sequence)) // take
 		{
 			sem_post(find_ssrs_ptr->getE()); // increase num empty slots
-			find_ssrs_ptr->findSSRsInSequence(header, sequence); // consum (find the ssrs in the given sequence)
+			find_ssrs_ptr->findSSRsInSequence(header, sequence); // consume (find the ssrs in the given sequence)
 		}
 		else
 		{
@@ -289,4 +302,32 @@ void* FindSSRs::consume(void* find_ssrs_vptr) // void* (*)(void* )
 	}
 
 	pthread_exit(NULL);
+}
+
+
+// --------------- STATIC FUNCTIONS ------------------------------ ||
+
+static
+uint32_t calculateDataSizeFromFasta(ifstream &fasta)
+{
+	uint32_t size = 0;
+	string line;
+	uint32_t pos = fasta.tellg();
+
+	fasta.seekg(0,fasta.beg);
+
+	while(getline(fasta,line))
+	{
+		if (line.size() > 0)
+		{
+			if (line[0] != '>')
+			{
+				size = size + line.size();
+			}
+		}
+	}
+
+	fasta.clear();
+	fasta.seekg(pos, fasta.beg);
+	return size;
 }

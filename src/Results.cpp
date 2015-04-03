@@ -108,7 +108,7 @@ uint32_t Results::enumeratedSSRFilter(const string &ssr)
 	}
 	return enumerated_ssrs->count(ssr);
 }
-void Results::writeToFile(bool write_additional_output, const string &header, const string &sequence, OutputFile &out_file)
+void Results::writeToFile(bool include_zero, bool write_additional_output, const string &header, const string &sequence, OutputFile &out_file)
 {
 	string output;
 	if (!results.empty())
@@ -126,12 +126,15 @@ void Results::writeToFile(bool write_additional_output, const string &header, co
 	}
 	else
 	{
-		output = output + header.substr(1,string::npos);
-		if (write_additional_output)
+		if (include_zero)
 		{
-			output = output + "\t-";
+			output = output + header.substr(1,string::npos);
+			if (write_additional_output)
+			{
+				output = output + "\t-";
+			}
+			output = output + "\t-\t0\t0\n";
 		}
-		output = output + "\t-\t0\t0\n";
 	}
 	out_file << output;
 }

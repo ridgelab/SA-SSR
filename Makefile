@@ -39,7 +39,10 @@ obj/FindSSRs.o: src/FindSSRs.cpp include/FindSSRs.h include/FindSSRsArgs.h inclu
 obj/FindSSRsMain.o: src/FindSSRsMain.cpp include/FindSSRs.h include/FindSSRsArgs.h include/Results.h include/SingleResult.h include/OutputFile.h include/FastaSequences.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-bin/findSSRs: obj/FindSSRsMain.o obj/OutputFile.o obj/FastaSequences.o obj/FindSSRs.o obj/Results.o obj/SingleResult.o obj/FindSSRsArgs.o
+obj/ProgressMeter.o: src/ProgressMeter.cpp include/ProgressMeter.h
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+bin/findSSRs: obj/FindSSRsMain.o obj/OutputFile.o obj/FastaSequences.o obj/FindSSRs.o obj/Results.o obj/SingleResult.o obj/FindSSRsArgs.o obj/ProgressMeter.o
 	$(CXX) $(CXXFLAGS) $(LIBS) $^ -o $@
 
 permissions:
