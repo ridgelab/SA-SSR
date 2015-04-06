@@ -1,3 +1,127 @@
-For installation instructions, see the INSTALL file.
+README
+======
 
-For running instructions, run with `-h'.
+Table of Contents
+-----------------
+
+  I. Introduction
+ II. Installation Instructions
+III. Usage Instructions and Examples
+ IV. License
+  V. Funding and Acknowledgements
+ VI. Contact
+
+
+I. Introduction
+---------------
+findSSRs is a software tool developed to find Simple Sequence Repeats (SSRs) in
+a sequence (presumably of DNA or RNA). SSRs are sometimes referred to as Short
+Tandem Repeats (STRs) or microsatellites. SSRs are genetic markers with several
+interesting and meaningful biological implications. For example, SSRs are
+considered in genome alignment against a reference and species identification.
+
+Many software tools exist for this purpose, but vary widely in utility. Some
+key features of our tool are as follows:
+
+    - Fast run time (linear, O(n), time complexity)
+    - Memory efficient (linear, O(n), space complexity)
+    - Finds all perfect repeats
+    - Simple command-line interface, convenient for scripting and when running
+      on High-Performance Computing (HPC) systems (note: no GUI provided)
+    - Easily parsed, tab-delimited output
+    - Runs on Linux (not Windows or Mac OS X)
+
+See our paper in __journal__ for further information:
+    http://sub-domain.domain.tld/some/path/to/resource
+
+
+II. Installation Instructions
+-----------------------------
+To compile findSSRs, simply type `make'. The binary will be in the `bin'
+directory. Your compiler must support C++11.
+
+To compile and install, type `make' followed by `make install'.  The binary
+will be in both the `bin' and `/usr/local/bin' directories (to change this,
+change the `PREFIX' variable in `Makefile').  
+
+To uninstall, type `make clean'.
+
+See `INSTALL' for further instructions.
+
+
+III. Usage Instructions and Examples
+-------------------------------------
+Please run the software with the `--help' option for complete usage instructions
+(i.e., type `findSSRs -h' or `findSSRs --help').
+
+Examples:
+
+    Example 1:
+    
+        findSSRs input.fasta output.txt
+
+        Run findSSRs on sequences in `input.fasta' and write results to
+        `output.txt'. This will use the default parameters; run the software
+        with `--help' to see the defaults and check if they meet your needs.
+    
+    Example 2:
+        
+        findSSRs -l 50 -L 200 input.fasta output.txt
+
+        Run findSSRs on sequences in `input.fasta' that are between 50 and 200
+        base pairs long.  The results will be in `output.txt'.
+    
+    Example 3:
+        
+        findSSRs -m 2 -M 9 -r 3 -R 20 input.fasta output.txt
+        
+        Run findSSRs on sequences in `input.fasta' and write results to
+        `output.txt'.  Only SSRs meeting the parameters provided will be
+        included.  The meaning of each option is as follows:
+
+            -m, -M    The min (-m) and max (-M) length of the repeating unit.
+                      As examples: `AAAAAA...' and `ACGCAGTTGCACGCAGTTGC...'
+                      would not make the cutoff.  However, `ACACAC...' and
+                      `AATCCTGGTAATCCTGGT...' would be in the output.
+            
+            -r, -R    The min (-r) and max (-R) times the repeating unit
+                      repeats.  As examples: `ACAC' and `ACACACACACACACACACACAC
+                      ACACACACACACACACACAC' (21 `AC' units) would not make the
+                      cutoff. However, `ACACAC' and `ACACACACACACACACACACACACAC
+                      ACACACACACACAC' (20 `AC' units) would be in the output.
+    
+    Example 4:
+
+        findSSRs -t 4 input.fasta output.txt
+
+        Run findSSRs on sequences in `input.fasta' and write results to
+        `output.txt'.  Use 4 threads of execution, instead of the default 1.
+
+    Example 5:
+
+        findSSRs -l 50 -L 200 -m 2 -M 9 -r 3 -R 20 -t 4 input.fasta output.txt
+
+        Run findSSRs on sequences in `input.fasta' and write results to
+        `output.txt'. This is a combination of examples 2, 3, and 4.
+        
+
+IV. License
+-----------
+Please see `LICENSE'.
+
+
+V. Funding and Acknowledgements
+-------------------------------
+Funding for the research and production of this software was provided by
+startup funds to Dr. Perry Ridge.
+
+
+VI. Contact
+-----------
+For questions, comments, concerns, feature requests, suggestions, etc., please
+contact:
+
+Pery Ridge, Ph.D. -- perry.ridge@byu.edu
+
+Note: For usage questions, please consult section `III. Usage Instructions and
+Examples' first.

@@ -17,7 +17,7 @@ ProgressMeter::~ProgressMeter()
 }
 void ProgressMeter::setUp()
 {
-	this->bar_width = this->calculateWidth() - 5; // 5 because " 100%" (5 chars) at max.  At min, " 4%" (3 chars). In the middle, " 76%" (4 chars).
+	this->bar_width = this->calculateWidth() - 7; // 7 because of "[" and "]" and " 100%" (5 chars) at max.  At min, " 4%" (3 chars). In the middle, " 76%" (4 chars).
 	
 	this->data_done = 0;
 	this->data_size = 0;

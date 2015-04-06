@@ -4,15 +4,16 @@
 CXX?=g++
 CXXFLAGS+=-g -Wall -Wextra -std=c++11 -pthread
 LIBS?=
+PREFIX=/usr/local/bin
 
 # ------ TARGETS ---------------------
 all: prep bin/findSSRs permissions
 
 clean:
 	@rm -rf bin/* || true
-	@rm -rf obj/* || true
+	@if [ -e $(PREFIX)/findSSRs -a -r $(PREFIX)/findSSRs -a -w $(PREFIX)/findSSRs ] ; then rm -f $(PREFIX)/findSSRs || true; fi
 
-realclean:
+realclean: clean
 	@rm -rf bin obj || true
 
 prep:
@@ -49,3 +50,6 @@ permissions:
 	@chmod 750 bin bin/findSSRs || true
 	@chmod 750 include src obj || true
 	@chmod 640 include/* src/* obj/* || true
+
+install:
+	@if [ -e bin/findSSRs ]; then cp bin/findSSRs $(PREFIX)/findSSRs || true; else echo "ERROR: \`bin/findSSRs' does not exist. Did you forget to run \`make' first?"; fi
