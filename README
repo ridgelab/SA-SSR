@@ -60,7 +60,7 @@ Examples:
     
         findSSRs input.fasta output.txt
 
-        Run findSSRs on sequences in `input.fasta' and write results to
+        Run findSSRs on fasta sequences in `input.fasta' and write results to
         `output.txt'. This will use the default parameters; run the software
         with `--help' to see the defaults and check if they meet your needs.
     
@@ -68,14 +68,14 @@ Examples:
         
         findSSRs -l 50 -L 200 input.fasta output.txt
 
-        Run findSSRs on sequences in `input.fasta' that are between 50 and 200
-        base pairs long.  The results will be in `output.txt'.
+        Run findSSRs on fasta sequences in `input.fasta' that are between 50 and
+        200 base pairs long.  The results will be in `output.txt'.
     
     Example 3:
         
         findSSRs -m 2 -M 9 -r 3 -R 20 input.fasta output.txt
         
-        Run findSSRs on sequences in `input.fasta' and write results to
+        Run findSSRs on fasta sequences in `input.fasta' and write results to
         `output.txt'.  Only SSRs meeting the parameters provided will be
         included.  The meaning of each option is as follows:
 
@@ -94,14 +94,14 @@ Examples:
 
         findSSRs -t 4 input.fasta output.txt
 
-        Run findSSRs on sequences in `input.fasta' and write results to
+        Run findSSRs on fasta sequences in `input.fasta' and write results to
         `output.txt'.  Use 4 threads of execution, instead of the default 1.
 
     Example 5:
 
         findSSRs -l 50 -L 200 -m 2 -M 9 -r 3 -R 20 -t 4 input.fasta output.txt
 
-        Run findSSRs on sequences in `input.fasta' and write results to
+        Run findSSRs on fasta sequences in `input.fasta' and write results to
         `output.txt'. This is a combination of examples 2, 3, and 4.
         
 
