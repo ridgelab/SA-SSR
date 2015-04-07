@@ -49,7 +49,7 @@ bin/findSSRs: obj/FindSSRsMain.o obj/OutputFile.o obj/FastaSequences.o obj/FindS
 permissions:
 	@chmod 750 bin bin/findSSRs || true
 	@chmod 750 include src obj || true
-	@chmod 640 include/* src/* obj/* examples/* || true
+	@chmod 640 include/* src/* obj/* example/* || true
 
 install:
 	@if [ -e bin/findSSRs ]; then cp bin/findSSRs $(PREFIX)/findSSRs || true; else echo "ERROR: \`bin/findSSRs' does not exist. Did you forget to run \`make' first?"; fi
