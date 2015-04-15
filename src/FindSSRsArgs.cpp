@@ -383,35 +383,35 @@ void FindSSRsArgs::processArgs(int argc, char* argv[])
 void FindSSRsArgs::printHelp() const
 {
 	cerr << "VERSION:" << endl << endl;
-	cerr << "\t0.1 alpha" << endl << endl;
+	cerr << "    0.1 alpha" << endl << endl;
 	cerr << "USAGE:" << endl << endl;
-	cerr << "\t" << this->usage_statement << "\t(options may be in any order, but must come before the input and output files)" << endl << endl;
+	cerr << "    " << this->usage_statement << "\n\n    Options may be in any order, but must come before the input and output files." << endl << endl;
 	cerr << "REQUIRED:" << endl << endl;
-	cerr << "\t<input-file>" << endl << "\t\tThe input fasta file. Header lines must contain no tabs. All sequences must not contain whitespace (except newlines). This is a positional argument." << endl << endl;
-	//cerr << "\t\tGOOD EXAMPLE:\n\t\t\t>seq1\n\t\t\tAGCTGCGCGTATATACGTACGACTCGTATGCAGTC.......\n\t\t\t>seq2\n\t\t\tGATCGATCGATGCTAGCGATGCTACTAGTCTATCGATGCA.......\n\t\t\t...\n\t\t\t...\n\t\t\t..." << endl << endl;
-	//cerr << "\t\tBAD EXAMPLE:\n\t\t\t>seq1\n\t\t\tagctgcgcgtatatacgtacgactcgtatgcagtc.......\n\t\t\t>seq2\n\t\t\tgAtCGATcgatgcTAGcgATGcTACTaGTCTaTCGaTGca.......\n\t\t\t>seq3\n\t\t\tTCATTTTAGCTAGCTAGCTAGTCGATCTATCATCGATCGTA\n\t\t\tCGCGCGCGATCGATCGATGCTAGTCGACAACGTACGACTAG\n\t\t\tACGTACGTAGCATCGATGCATCGATCGTAGCACGTGTTTTT\n\t\t\tGCTAGCTAGCTGATCGTAGTGCATCGACTACGTAGCTAGCT\n\t\t\t...\n\t\t\t...\n\t\t\t..." << endl << endl;
-	cerr << "\t<output_file>" << endl << "\t\tThe name of the output file. This is a positional argument." << endl << endl;
+	cerr << "    <input-file>" << endl << "        The input fasta file. Header lines must contain no tabs. All sequences\n        must not contain whitespace (except newlines). This is a positional\n        argument." << endl << endl;
+	//cerr << "        GOOD EXAMPLE:\n            >seq1\n            AGCTGCGCGTATATACGTACGACTCGTATGCAGTC.......\n            >seq2\n            GATCGATCGATGCTAGCGATGCTACTAGTCTATCGATGCA.......\n            ...\n            ...\n            ..." << endl << endl;
+	//cerr << "        BAD EXAMPLE:\n            >seq1\n            agctgcgcgtatatacgtacgactcgtatgcagtc.......\n            >seq2\n            gAtCGATcgatgcTAGcgATGcTACTaGTCTaTCGaTGca.......\n            >seq3\n            TCATTTTAGCTAGCTAGCTAGTCGATCTATCATCGATCGTA\n            CGCGCGCGATCGATCGATGCTAGTCGACAACGTACGACTAG\n            ACGTACGTAGCATCGATGCATCGATCGTAGCACGTGTTTTT\n            GCTAGCTAGCTGATCGTAGTGCATCGACTACGTAGCTAGCT\n            ...\n            ...\n            ..." << endl << endl;
+	cerr << "    <output_file>" << endl << "        The name of the output file. This is a positional argument." << endl << endl;
 	cerr << "OPTIONAL:" << endl << endl;
-	cerr << "\tINPUT CONTROL:" << endl << endl;
-	cerr << "\t\t-l, --min-seq-len" << endl << "\t\t\tThe min length of a fasta sequence required before finding SSRs will be attempted. [default: 100]" << endl << endl;
-	cerr << "\t\t-L, --max-seq-len" << endl << "\t\t\tThe max length of a fasta sequence after which finding SSRs will not be attempted. [default: 1500]" << endl << endl;
-	cerr << "\tOUTPUT CONTROL:" << endl << endl;
-	cerr << "\t\t-f, --add-full-seq" << endl << "\t\t\tAdd an additional column, containing the full sequence, to the output file.  This column will be added after the `Sequence_Name' column." << endl << endl;
-	cerr << "\t\t-m, --min-ssr-len" << endl << "\t\t\tThe min number of nucleotides in the base of the SSR (e.g., ACGTACGT has base-ssr-len of 4, AAAAAAAAAAAAAAAAAA has base-ssr-len of 1). [default: 4]" << endl << endl;
-	cerr << "\t\t-M, --max-ssr-len" << endl << "\t\t\tThe max number of nucleotides in the base of the SSR (e.g., ACGTACGT has base-ssr-len of 4, AAAAAAAAAAAAAAAAAA has base-ssr-len of 1). [default: 8]" << endl << endl;
-	cerr << "\t\t-n, --min-nucs" << endl << "\t\t\tThe min number of nucleotides in the entire SSR (e.g., ACGTACGT has 8 nucleotides, AAAAAAAAAAAAAAAAAA has 18 nucleotides). [default: 16]" << endl << endl;
-	cerr << "\t\t-r, --min-repeats" << endl << "\t\t\tThe min number of repeats in the entire SSR (e.g., ACGTACGT has 2 repeats, AAAAAAAAAAAAAAAAAA has 18 repeats). [default: 1]" << endl << endl;
-	cerr << "\t\t-R, --max-repeats" << endl << "\t\t\tThe max number of repeats in the entire SSR (e.g., ACGTACGT has 2 repeats, AAAAAAAAAAAAAAAAAA has 18 repeats). [default: none (technically: 4,294,967,295)]" << endl << endl;
-	cerr << "\t\t-s, --ssrs" << endl << "\t\t\tFilter output by the supplied list of base SSR units (e.g., AC for ACACAC). If an SSR with a different base unit is found, it will be discarded.\n\t\t\tThe enumerated SSRs should take the form of an UPPERCASE, comma-separated list: SSR-BASE1,SSR-BASE2,...,SSR-BASEn (e.g., AC,GGTCA,TCA,TTCCGAAGGC)." << endl << endl;
-	cerr << "\t\t-z, --include-zero" << endl << "\t\t\tInclude an output record for sequences where no SSRs are found (within the provided constraints)." << endl << endl;
-	cerr << "\tMISC:" << endl << endl;
-	cerr << "\t\t-e, --exhaustive" << endl << "\t\t\tTake an exhaustive approach to finding the SSRs.  By default a quick approach is taken.  Note that all meaninful SSRs will be found within the\n\t\t\tuser-specified constraints using the exhaustive approach.  Although unlikely, the exhuastive approach could take (worst-case) order n^2\n\t\t\ttime (if, for example, your data were primarily or entirely one nucleotide OR you specify the minimum base ssr length to be 1 or 2).\n\t\t\tFor many cases, the default approach is sufficient and will save (possibly significant) time." << endl << endl;
-	cerr << "\t\t-h, --help" << endl << "\t\t\tShow this help and exit.  All other arguments will be ignored." << endl << endl;
-	cerr << "\t\t-t, --num-threads" << endl << "\t\t\tThe number of threads to use. [default: 1]" << endl << endl;
+	cerr << "    INPUT CONTROL:" << endl << endl;
+	cerr << "        -l, --min-seq-len" << endl << "            The min length of a fasta sequence required before finding SSRs will\n            be attempted. [default: 100]" << endl << endl;
+	cerr << "        -L, --max-seq-len" << endl << "            The max length of a fasta sequence after which finding SSRs will not\n            be attempted. [default: 1500]" << endl << endl;
+	cerr << "    OUTPUT CONTROL:" << endl << endl;
+	cerr << "        -f, --add-full-seq" << endl << "            Add an additional column, containing the full sequence, to the output\n            file.  This column will be added after the `Sequence_Name' column." << endl << endl;
+	cerr << "        -m, --min-ssr-len" << endl << "            The min number of nucleotides in the base of the SSR (e.g., ACGTACGT\n            has base-ssr-len of 4, AAAAAAAAAAAAAAAAAA has base-ssr-len of 1).\n            [default: 4]" << endl << endl;
+	cerr << "        -M, --max-ssr-len" << endl << "            The max number of nucleotides in the base of the SSR (e.g., ACGTACGT\n            has base-ssr-len of 4, AAAAAAAAAAAAAAAAAA has base-ssr-len of 1).\n            [default: 8]" << endl << endl;
+	cerr << "        -n, --min-nucs" << endl << "            The min number of nucleotides in the entire SSR (e.g., ACGTACGT has 8\n            nucleotides, AAAAAAAAAAAAAAAAAA has 18 nucleotides). [default: 16]" << endl << endl;
+	cerr << "        -r, --min-repeats" << endl << "            The min number of repeats in the entire SSR (e.g., ACGTACGT has 2\n            repeats, AAAAAAAAAAAAAAAAAA has 18 repeats). [default: 1]" << endl << endl;
+	cerr << "        -R, --max-repeats" << endl << "            The max number of repeats in the entire SSR (e.g., ACGTACGT has 2\n            repeats, AAAAAAAAAAAAAAAAAA has 18 repeats). [default: none\n            (technically: 4,294,967,295)]" << endl << endl;
+	cerr << "        -s, --ssrs" << endl << "            Filter output by the supplied list of base SSR units (e.g., AC for\n            ACACAC). If an SSR with a different base unit is found, it will be\n            discarded. The enumerated SSRs should take the form of an UPPERCASE,\n            comma-separated list: SSR-BASE1,SSR-BASE2,...,SSR-BASEn\n            (e.g., AC,GGTCA,TCA,TTCCGAAGGC)." << endl << endl;
+	cerr << "        -z, --include-zero" << endl << "            Include an output record for sequences where no SSRs are found\n            (within the provided constraints)." << endl << endl;
+	cerr << "    MISC:" << endl << endl;
+	cerr << "        -e, --exhaustive" << endl << "            Take an exhaustive approach to finding the SSRs.  By default a quick\n            approach is taken.  Note that all meaninful SSRs will be found within\n            the user-specified constraints using the exhaustive approach.\n            Although unlikely, the exhuastive approach could take (worst-case)\n            order n^2 time (if, for example, your data were primarily or entirely\n            one nucleotide OR you specify the minimum base ssr length to be 1 or\n            2). For many cases, the default approach is sufficient and will save\n            (possibly significant) time." << endl << endl;
+	cerr << "        -h, --help" << endl << "            Show this help and exit.  All other arguments will be ignored." << endl << endl;
+	cerr << "        -t, --num-threads" << endl << "            The number of threads to use. [default: 1]" << endl << endl;
 	cerr << "DEPENDENCIES:" << endl << endl;
-	cerr << "\tNone." << endl << endl;
+	cerr << "    None." << endl << endl;
 	cerr << "NOTE:" << endl << endl;
-	cerr << "\t--We compiled using gcc 4.9.0.  Your compiler must support C++11." << endl << endl;
+	cerr << "    --We compiled using gcc 4.9.0.  Your compiler must support C++11." << endl << endl;
 }
 string FindSSRsArgs::toString() const
 {
