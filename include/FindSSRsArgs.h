@@ -29,6 +29,7 @@ private:
 	uint32_t min_sequence_length; // default 100
 	uint32_t max_sequence_length; // default 1500
 	uint32_t min_repeats; // default 1
+	//vector<uint32_t> min_repeats; // default 1 in each slot
 	uint32_t max_repeats; // default none (uint32_t max)
 	uint32_t num_threads; // default 1
 	string usage_statement;

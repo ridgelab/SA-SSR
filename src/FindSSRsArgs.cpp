@@ -104,6 +104,10 @@ uint32_t FindSSRsArgs::getMinRepeats() const
 {
 	return this->min_repeats;
 }
+//uint32_t FindSSRsArgs::getMinRepeats(const uint32_t &k) const
+//{
+//	return this->min_repeats(k);
+//}
 uint32_t FindSSRsArgs::getMaxRepeats() const
 {
 	return this->max_repeats;
@@ -229,6 +233,11 @@ void FindSSRsArgs::processArgs(int argc, char* argv[])
 					stringstream strm;
 					strm << argv[i];
 					strm >> this->min_nucleotide_length;
+					
+					if (strm.fail())
+					{
+						this->arguments_valid = false;
+					}
 				}
 				else
 				{
@@ -266,12 +275,56 @@ void FindSSRsArgs::processArgs(int argc, char* argv[])
 					stringstream strm;
 					strm << argv[i];
 					strm >> this->min_repeats;
+
+					if (strm.fail())
+					{
+						this->arguments_valid = false;
+					}
 				}
 				else
 				{
 					this->arguments_valid = false;
 				}
 			}
+			//else if (strcmp(argv[i], "--min-repeats") == 0 || strcmp(argv[i], "-r") == 0) // this would have to be processed AFTER min/max ssr lengths!!
+			//{
+			//	expected_args = expected_args + 2; // 0=FindSSRsArgs, (1:argc-3)=( (-e || --exhaustive) && ((-s || --ssrs) SSR1,SSR2,SSR3,...,SSRn) && ((-b || --blast) species2-blastdb) && ((-n || --min-nucs) 16) && ((-m || --min-ssr-len) 4) && ((-M || --max-ssr-len) 8) ), (argc-2)=input_file.fasta, (argc-1)=output_file
+                          
+			//	if (i < (uint32_t) (argc - 3)) // as long as there is more space for the input and output files...
+			//	{
+			//		i++;
+			//		string str;
+			//		stringstream strm;
+			//		strm << argv[i];
+			//		
+			//		while (getline(strm, str, ','))
+			//		{
+			//			uint32_t temp_int = 0;
+			//			stringstream other_strm;
+			//			other_strm << str;
+			//			other_strm >> temp_int;
+                          
+			//			if (!strm.fail())
+			//			{
+			//				this->min_repeats.push_back(temp_int):
+			//			}
+			//			else
+			//			{
+			//				this->min_repeats.push_back(0); // So we put each of the following repeat limits into the correct slot
+			//				this->arguments_valid = false;
+			//			}
+			//		}
+                          
+			//		if (this->min_repeats.size() != (this->max_ssr_length - this->min_ssr_length + 1))
+			//		{
+			//			this->arguments_valid = false;
+			//		}
+			//	}
+			//	else
+			//	{
+			//		this->arguments_valid = false;
+			//	}
+			//}
 			else if (strcmp(argv[i], "--max-repeats") == 0 || strcmp(argv[i], "-R") == 0)
 			{
 				expected_args = expected_args + 2; // 0=FindSSRsArgs, (1:argc-3)=( (-e || --exhaustive) && ((-s || --ssrs) SSR1,SSR2,SSR3,...,SSRn) && ((-b || --blast) species2-blastdb) && ((-n || --min-nucs) 16) && ((-m || --min-ssr-len) 4) && ((-M || --max-ssr-len) 8) ), (argc-2)=input_file.fasta, (argc-1)=output_file
@@ -282,6 +335,11 @@ void FindSSRsArgs::processArgs(int argc, char* argv[])
 					stringstream strm;
 					strm << argv[i];
 					strm >> this->max_repeats;
+					
+					if (strm.fail())
+					{
+						this->arguments_valid = false;
+					}
 				}
 				else
 				{
@@ -298,6 +356,11 @@ void FindSSRsArgs::processArgs(int argc, char* argv[])
 					stringstream strm;
 					strm << argv[i];
 					strm >> this->max_ssr_length;
+					
+					if (strm.fail())
+					{
+						this->arguments_valid = false;
+					}
 				}
 				else
 				{
@@ -314,6 +377,11 @@ void FindSSRsArgs::processArgs(int argc, char* argv[])
 					stringstream strm;
 					strm << argv[i];
 					strm >> this->min_sequence_length;
+					
+					if (strm.fail())
+					{
+						this->arguments_valid = false;
+					}
 				}
 				else
 				{
@@ -330,6 +398,11 @@ void FindSSRsArgs::processArgs(int argc, char* argv[])
 					stringstream strm;
 					strm << argv[i];
 					strm >> this->max_sequence_length;
+					
+					if (strm.fail())
+					{
+						this->arguments_valid = false;
+					}
 				}
 				else
 				{
@@ -347,6 +420,11 @@ void FindSSRsArgs::processArgs(int argc, char* argv[])
 					int temp;
 					strm << argv[i];
 					strm >> temp;
+					
+					if (strm.fail())
+					{
+						this->arguments_valid = false;
+					}
 					
 					if (temp >= 1)
 					{
