@@ -118,7 +118,8 @@ void Results::writeToFile(bool include_zero, bool write_additional_output, const
 			if (isStartPositionAvailableAt(itr->getP()) == true)
 			{
 				itr->writeToFile(write_additional_output, header, sequence, output);
-				output = output + "\n";
+				//output = output + "\n";
+				output += "\n";
 
 				updateAvailableStartPositions(itr->getK(), itr->getR(), itr->getP());
 			}
@@ -128,12 +129,15 @@ void Results::writeToFile(bool include_zero, bool write_additional_output, const
 	{
 		if (include_zero)
 		{
-			output = output + header.substr(1,string::npos);
+			//output = output + header.substr(1,string::npos);
+			output += header.substr(1,string::npos);
 			if (write_additional_output)
 			{
-				output = output + "\t-";
+				//output = output + "\t-";
+				output += "\t-";
 			}
-			output = output + "\t-\t0\t0\n";
+			//output = output + "\t-\t0\t0\n";
+			output += "\t-\t0\t0\n";
 		}
 	}
 	out_file << output;
@@ -144,30 +148,36 @@ string  Results::toString()
 	stringstream strm;
 	temp = "Results\n=======\n";
 	
-	temp = temp + "Position Availability[ ";
+	//temp = temp + "Position Availability[ ";
+	temp += "Position Availability[ ";
 	for (uint32_t i = 0; i < available_start_positions.size(); i++)
 	{
 		if (i > 0)
 		{
-			temp = temp + ", ";
+			//temp = temp + ", ";
+			temp += ", ";
 		}
 		
 		if (available_start_positions[i] == true)
 		{
- 			temp = temp + "true";
+ 			//temp = temp + "true";
+ 			temp += "true";
 		}
 		else
 		{
-			temp = temp + "false";
+			//temp = temp + "false";
+			temp += "false";
 		}
 	}
-	temp = temp + " ]\n";
+	//temp = temp + " ]\n";
+	temp += " ]\n";
 
 	for (set<SingleResult>::iterator itr = results.begin(); itr != results.end(); ++itr)
 	{
 		if (isStartPositionAvailableAt(itr->getP()) == true)
 		{
-			temp = temp + itr->toString() + "\n";
+			//temp = temp + itr->toString() + "\n";
+			temp += itr->toString() + "\n";
 			updateAvailableStartPositions(itr->getK(), itr->getR(), itr->getP());
 		}
 	}

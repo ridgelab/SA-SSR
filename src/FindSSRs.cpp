@@ -17,6 +17,13 @@ FindSSRs::FindSSRs(FindSSRsArgs* _args) : out_file(_args->getOutFileName(), _arg
 	this->num_threads = this->args->getNumThreads();
 	sem_init(&(this->n),0,0);
 	sem_init(&(this->e),0,(this->num_threads * 2));
+	//sem_init(&(this->d),0,-1 * (this->num_threads - 2));
+	sem_init(&(this->d),0,1);
+	//sem_init(&(this->d),0,0);
+	sem_init(&(this->s),0,0);
+	//this->finished_threads = 0;
+	this->finished_threads = 1;
+	
 	this->progress_bar = ProgressMeter();
 }
 FindSSRs::~FindSSRs()
@@ -31,6 +38,37 @@ sem_t* FindSSRs::getN() const
 sem_t* FindSSRs::getE() const
 {
 	return (sem_t*) &(this->e);
+}
+sem_t* FindSSRs::getD() const
+{
+	return (sem_t*) &(this->d);
+}
+sem_t* FindSSRs::getS() const
+{
+	return (sem_t*) &(this->s);
+}
+//mutex* FindSSRs::getM() const
+//{
+//	return (mutex*) &(this->m);
+//}
+//condition_variable* FindSSRs::getCV() const
+//{
+//	return (condition_variable*) &(this->cv);
+//}
+uint32_t FindSSRs::getFinishedThreadsCount() const
+{
+	//uint32_t temp;
+	//sem_wait(&(this->d)); // acquire lock for finished threads
+	//temp = this->finished_threads;
+	//sem_post(&(this->d)); // release lock for finished threads
+	//return temp;
+	return this->finished_threads;
+}
+void FindSSRs::incrementFinishedThreads()
+{
+	sem_wait(&(this->d)); // acquire lock for finished threads
+	++this->finished_threads;
+	sem_post(&(this->d)); // release lock for finished threads
 }
 uint32_t FindSSRs::run()
 {
@@ -54,14 +92,28 @@ uint32_t FindSSRs::run()
 		return 1;
 	}
 
+	//cerr << "About to start joining threads..." << endl;
 	//this->joinAndForgetAllThreads(); // clean up consumers
-	
-	//sleep(2); // give everything a chance to really finish.  For some reason, when I don't wait for 1-2 seconds, I miss one or two results in the output.
 
-	//int nval, eval = 0;
+	//cerr << "Sleeping for 2 seconds..." << endl;
+	//sleep(2); // give everything a chance to really finish.  For some reason, when I don't wait for 1-2 seconds, I miss one or two results in the output.
+	//sem_wait(&(this->d)); // decrease num empty slots
+	
+	//unique_lock<mutex> lk(&(this->cv));
+	//this->cv.wait(lk, );
+	
+	while (this->finished_threads < this->num_threads)
+	{
+		//cerr << "Waiting on threads! (" << this->finished_threads << "/" << this->num_threads << ")" << endl;
+		sem_wait(&(this->s)); // wait for signal from a thread
+	}
+	
+	//int nval, eval, dval, sval = 0;
 	//sem_getvalue(&(this->n), &nval);
 	//sem_getvalue(&(this->e), &eval);
-	//cerr << "final n,e: " << nval << "," << eval << endl;
+	//sem_getvalue(&(this->d), &dval);
+	//sem_getvalue(&(this->s), &sval);
+	//cerr << "final n,e,d,s: " << nval << "," << eval << "," << dval << "," << sval << endl;
 	
 	return 0;
 }
@@ -69,13 +121,14 @@ uint32_t FindSSRs::makeThreads()
 {
 	pthread_attr_t tattr;
 	pthread_attr_init(&tattr);
-	pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_JOINABLE);
+	pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_JOINABLE); // Maybe omit because this is already default?
 	
 	for (uint32_t i = 1; i < this->num_threads; i++)
 	{
 		pthread_t thread;
 		this->threads.push_back(thread);
 
+		//if ( pthread_create(&thread,NULL,&consume,(void*) this) != 0 )
 		if ( pthread_create(&thread,&tattr,&consume,(void*) this) != 0 )
 		{
 			perror("creating threads");
@@ -91,6 +144,7 @@ void FindSSRs::joinAndForgetAllThreads()
 {
 	for (uint32_t i = 0; i < this->threads.size(); i++)
 	{
+		//cerr << "Attempting to join thread #" << i << " with ID=" << this->threads[i] << endl;
 		long status = 0L;
 		long* status_ptr = &status;
 
@@ -124,7 +178,8 @@ void FindSSRs::processInput() // produce
 			{
 				for (uint32_t i = 0; i < line.size(); ++i)
 				{
-					sequence = sequence + (char) toupper(line[i]);
+					//sequence = sequence + (char) toupper(line[i]);
+					sequence += (char) toupper(line[i]);
 				}
 			}
 			else
@@ -169,7 +224,7 @@ void FindSSRs::processInput() // produce
 			this->fasta_seqs.dryUp(); // tell the FastaSequences object it will never recieve more input
 			for (uint32_t i = 1; i < this->num_threads; i++)
 			{
-				sem_post(&(this->n)); // tell the consumers there's another thing to consume (which will be the stop code)
+				sem_post(&(this->n)); // tell the consumers there's another thing to consume (which will be the stop code), aka, it will return a stop code.
 			}
 			break;
 	}
@@ -300,8 +355,14 @@ void* FindSSRs::consume(void* find_ssrs_vptr) // void* (*)(void* )
 			go = false;
 		}
 	}
-
-	pthread_exit(NULL);
+	
+	//cout << "I'm exiting!" << endl;
+	//long* status = 0;
+	//pthread_exit((void*) status);
+	//sem_post(find_ssrs_ptr->getD()); // increase num empty slots
+	find_ssrs_ptr->incrementFinishedThreads();
+	sem_post(find_ssrs_ptr->getS()); // send a signal to main thread
+	return NULL;
 }
 
 
@@ -322,7 +383,8 @@ uint32_t calculateDataSizeFromFasta(ifstream &fasta)
 		{
 			if (line[0] != '>')
 			{
-				size = size + line.size();
+				//size = size + line.size();
+				size += line.size();
 			}
 		}
 	}

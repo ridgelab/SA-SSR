@@ -14,6 +14,8 @@
 #include <sstream>
 #include <semaphore.h>
 #include <pthread.h>
+#include <mutex>
+#include <condition_variable>
 
 #include "FindSSRsArgs.h"
 #include "Results.h"
@@ -35,6 +37,11 @@ private:
 	OutputFile out_file; // thread-safe class
 	sem_t n; // full space (for the consumer to take) in the buffer...if n increases/decreases, e should decrease/increase
 	sem_t e; // empty space (for the producer to fill) in the buffer...if e increases/decreases, n should decrease/increase
+	sem_t d; // finished semaphores
+	sem_t s; // signal finished 
+	//mutex m; // all threads finished
+	//condition_variable cv; // all threads finished
+	uint32_t finished_threads;
 	ProgressMeter progress_bar;
 
 public:
@@ -42,6 +49,12 @@ public:
 	~FindSSRs();
 	sem_t* getN() const;
 	sem_t* getE() const;
+	sem_t* getD() const;
+	sem_t* getS() const;
+	//mutex* getM() const;
+	//condition_variable* getCV() const;
+	uint32_t getFinishedThreadsCount() const;
+	void incrementFinishedThreads();
 	uint32_t run();
 	uint32_t makeThreads();
 	void joinAndForgetAllThreads();

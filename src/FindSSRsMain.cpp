@@ -4,6 +4,7 @@
 */
 
 // include statements
+#include <pthread.h>
 #include "../include/FindSSRs.h"
 #include "../include/FindSSRsArgs.h"
 

@@ -59,14 +59,18 @@ void SingleResult::writeToFile(bool write_additional_output, const string &heade
 	stringstream strm;
 	strm << (this->r + 1) << " " << this->p;
 	strm >> temp;
-	output = output + header.substr(1,header.size() - 1); // header
+	//output = output + header.substr(1,header.size() - 1); // header
+	output += header.substr(1,header.size() - 1); // header
 	if (write_additional_output)
 	{
-		output = output + "\t" + sequence.substr(0,sequence.size() - 1); // \tsequence
+		//output = output + "\t" + sequence.substr(0,sequence.size() - 1); // \tsequence
+		output += "\t" + sequence.substr(0,sequence.size() - 1); // \tsequence
 	}
-	output = output + "\t" + sequence.substr(this->p,this->k) + "\t" + temp; // \tSSR\tRepeats
+	//output = output + "\t" + sequence.substr(this->p,this->k) + "\t" + temp; // \tSSR\tRepeats
+	output += "\t" + sequence.substr(this->p,this->k) + "\t" + temp; // \tSSR\tRepeats
 	strm >> temp;
-	output = output + "\t" + temp; // \tPosition
+	//output = output + "\t" + temp; // \tPosition
+	output += "\t" + temp; // \tPosition
 }
 string SingleResult::toString() const
 {
@@ -75,11 +79,14 @@ string SingleResult::toString() const
 	stringstream strm;
 	strm << k << " " << r << " " << p;
 	strm >> temp;
-	output = output + temp + ", r=";
+	//output = output + temp + ", r=";
+	output += temp + ", r=";
 	strm >> temp;
-	output = output + temp + ", p=";
+	//output = output + temp + ", p=";
+	output += temp + ", p=";
 	strm >> temp;
-	output = output + temp + " ]";
+	//output = output + temp + " ]";
+	output += temp + " ]";
 	return output;
 }
 bool SingleResult::operator<(const SingleResult &s) const
