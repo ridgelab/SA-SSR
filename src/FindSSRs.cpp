@@ -17,11 +17,8 @@ FindSSRs::FindSSRs(FindSSRsArgs* _args) : out_file(_args->getOutFileName(), _arg
 	this->num_threads = this->args->getNumThreads();
 	sem_init(&(this->n),0,0);
 	sem_init(&(this->e),0,(this->num_threads * 2));
-	//sem_init(&(this->d),0,-1 * (this->num_threads - 2));
 	sem_init(&(this->d),0,1);
-	//sem_init(&(this->d),0,0);
 	sem_init(&(this->s),0,0);
-	//this->finished_threads = 0;
 	this->finished_threads = 1;
 	
 	this->progress_bar = ProgressMeter();
@@ -47,14 +44,6 @@ sem_t* FindSSRs::getS() const
 {
 	return (sem_t*) &(this->s);
 }
-//mutex* FindSSRs::getM() const
-//{
-//	return (mutex*) &(this->m);
-//}
-//condition_variable* FindSSRs::getCV() const
-//{
-//	return (condition_variable*) &(this->cv);
-//}
 uint32_t FindSSRs::getFinishedThreadsCount() const
 {
 	//uint32_t temp;
@@ -94,13 +83,6 @@ uint32_t FindSSRs::run()
 
 	//cerr << "About to start joining threads..." << endl;
 	//this->joinAndForgetAllThreads(); // clean up consumers
-
-	//cerr << "Sleeping for 2 seconds..." << endl;
-	//sleep(2); // give everything a chance to really finish.  For some reason, when I don't wait for 1-2 seconds, I miss one or two results in the output.
-	//sem_wait(&(this->d)); // decrease num empty slots
-	
-	//unique_lock<mutex> lk(&(this->cv));
-	//this->cv.wait(lk, );
 	
 	while (this->finished_threads < this->num_threads)
 	{
@@ -359,7 +341,6 @@ void* FindSSRs::consume(void* find_ssrs_vptr) // void* (*)(void* )
 	//cout << "I'm exiting!" << endl;
 	//long* status = 0;
 	//pthread_exit((void*) status);
-	//sem_post(find_ssrs_ptr->getD()); // increase num empty slots
 	find_ssrs_ptr->incrementFinishedThreads();
 	sem_post(find_ssrs_ptr->getS()); // send a signal to main thread
 	return NULL;
