@@ -161,27 +161,27 @@ Usage Examples:
 
         Example 1:
         
-            findSSRs input.fasta output.txt
+            findSSRs input.fasta output.tsv
 
             Run findSSRs on fasta sequences in `input.fasta' and write results to
-            `output.txt'. This will use the default parameters; run the software
+            `output.tsv'. This will use the default parameters; run the software
             with `--help' to see the defaults and check if they meet your needs.
         
         Example 2:
             
-            findSSRs -l 50 -L 200 input.fasta output.txt
+            findSSRs -l 50 -L 200 input.fasta output.tsv
 
             Run findSSRs on fasta sequences in `input.fasta' that are between
             50 and 200 base pairs long; i.e., do not search for SSRs in fasta
             sequences shorter than 50 or longer than 200 bps. All results
-            will be in `output.txt'.
+            will be in `output.tsv'.
         
         Example 3:
             
-            findSSRs -m 2 -M 9 -r 3 -R 20 input.fasta output.txt
+            findSSRs -m 2 -M 9 -r 3 -R 20 input.fasta output.tsv
             
             Run findSSRs on fasta sequences in `input.fasta' and write results to
-            `output.txt'.  Only SSRs meeting the parameters provided will be
+            `output.tsv'.  Only SSRs meeting the parameters provided will be
             included.  The meaning of each option is as follows:
 
                 -m, -M    The min (-m) and max (-M) length of the repeating unit.
@@ -199,24 +199,24 @@ Usage Examples:
         
         Example 4:
 
-            findSSRs -t 4 input.fasta output.txt
+            findSSRs -t 4 input.fasta output.tsv
 
             Run findSSRs on fasta sequences in `input.fasta' and write results to
-            `output.txt'.  Use 4 threads of execution, instead of the default 1.
+            `output.tsv'.  Use 4 threads of execution, instead of the default 1.
 
         Example 5:
 
-            findSSRs -l 50 -L 200 -m 2 -M 9 -r 3 -R 20 -t 4 input.fasta output.txt
+            findSSRs -l 50 -L 200 -m 2 -M 9 -r 3 -R 20 -t 4 input.fasta output.tsv
 
             Run findSSRs on fasta sequences in `input.fasta' and write results to
-            `output.txt'. This is a combination of examples 2, 3, and 4.
+            `output.tsv'. This is a combination of examples 2, 3, and 4.
 
 
     Extended Example:
 
         The data for this extended example can be found in the `examples'
         directory. The input fasta file is `input.fasta'. The output files are
-        `output_default.txt' and `output.txt'. The data and example are
+        `output_default.tsv' and `output.tsv'. The data and example are
         fictitious, but was modified from real sequences. The numbers used for
         min/max sequence length or any other parameter may not be biologically
         realistic; however, they do conceptually represent a realistic
@@ -226,18 +226,18 @@ Usage Examples:
                      assembly of whole exome sequencing reads. The file has 16
                      fasta sequences.
 
-         output*.txt: The output files from running findSSRs as shown below.
+         output*.tsv: The output files from running findSSRs as shown below.
 
         One could just run findSSRs with the defaults:
 
-            findSSRs input.fasta output_default.txt
+            findSSRs input.fasta output_default.tsv
 
         However, the defaults may not be the best parameters for your data.
         Below is a reasonable command to use with this example data. Each
         alteration from the default is explained and justified based on the
         data in this example.
 
-            findSSRs -l 70 -L 300 -m 2 -M 9 -r 2 -t 4 -f input.fasta output.txt
+            findSSRs -l 70 -L 300 -m 2 -M 9 -r 2 -t 4 -f input.fasta output.tsv
 
         -l 70    Do not search for SSRs in fasta sequences less than 70 bps in
                  length. For sake of the example, we assume based on our reads
@@ -280,7 +280,7 @@ Usage Examples:
                  increase the size of the output file.
 
         If you inspect these two output files, you'll observe 12 output records
-        in `output_default.txt' and 7 output records in `output.txt'. Using the
+        in `output_default.tsv' and 7 output records in `output.tsv'. Using the
         custom parameters removed 6 output records; each were theoretically
         erroneous results (the SSRs really were there in the fasta sequence,
         but the fasta sequence wasn't valid). 1 additional output record was

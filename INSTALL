@@ -17,7 +17,7 @@ UNINSTALL
 ---------
 Simply type `make clean'.  This will remove the binary in the `bin' directory.
 If you installed with `make install', it will also remove the binary at the
-path provided by the `PREFIX' variable in `Makefile'.
+path provided by the `PREFIX' variable in the `Makefile'.
 
 The object (.o) files in the `obj' directory will not be deleted. To remove
 those files as well, type `make realclean'. If you use `make realclean', you

@@ -526,7 +526,7 @@ void FindSSRsArgs::printHelp() const
 	cerr << "    <output_file>" << endl << "        The name of the output file. This is a positional argument." << endl << endl;
 	cerr << "OPTIONAL:" << endl << endl;
 	cerr << "    INPUT CONTROL:" << endl << endl;
-	cerr << "        -i, --ignore" << endl << "            Ignore characters listed from the input sequences.  This parameter\n            must be a comma-separated list of UPPERCASE characters:\n            \"CHAR-1,CHAR-2,...,CHAR-n\" (e.g., \"N\" or \"N,K\")." << endl << endl;
+	cerr << "        -i, --ignore" << endl << "            Ignore listed characters from the input sequences.  This parameter\n            must be a comma-separated list of UPPERCASE characters:\n            \"CHAR-1,CHAR-2,...,CHAR-n\" (e.g., \"N\" or \"N,K\").  Please note that\n            when using this option, the SSRs in each sequence are neither\n            guaranteed to be in order nor grouped together.  Accordingly, sorting\n            the output file may be desirable:\n                cat ssr_file \\\n                    | sort -n -t '\\t' -k 4,4 \\\n                    | sort -s -t '\\t' -k 1,1 \\\n                    > sorted_ssr_file" << endl << endl;
 	cerr << "        -l, --min-seq-len" << endl << "            The min length of a fasta sequence required before finding SSRs will\n            be attempted. [default: 100]" << endl << endl;
 	cerr << "        -L, --max-seq-len" << endl << "            The max length of a fasta sequence after which finding SSRs will not\n            be attempted. [default: 1500]" << endl << endl;
 	cerr << "    OUTPUT CONTROL:" << endl << endl;
@@ -545,7 +545,7 @@ void FindSSRsArgs::printHelp() const
 	cerr << "DEPENDENCIES:" << endl << endl;
 	cerr << "    None." << endl << endl;
 	cerr << "NOTE:" << endl << endl;
-	cerr << "    --We compiled using gcc 4.9.0.  Your compiler must support C++11." << endl << endl;
+	cerr << "    --We compiled using gcc 4.9.2.  Your compiler must support C++11." << endl << endl;
 }
 string FindSSRsArgs::toString() const
 {
