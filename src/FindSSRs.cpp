@@ -105,7 +105,7 @@ uint32_t FindSSRs::makeThreads()
 	pthread_attr_init(&tattr);
 	pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_JOINABLE); // Maybe omit because this is already default?
 	
-	for (uint32_t i = 1; i < this->num_threads; i++)
+	for (uint32_t i = 1; i < this->num_threads; ++i)
 	{
 		pthread_t thread;
 		this->threads.push_back(thread);
@@ -124,7 +124,7 @@ uint32_t FindSSRs::makeThreads()
 }
 void FindSSRs::joinAndForgetAllThreads()
 {
-	for (uint32_t i = 0; i < this->threads.size(); i++)
+	for (uint32_t i = 0; i < this->threads.size(); ++i)
 	{
 		//cerr << "Attempting to join thread #" << i << " with ID=" << this->threads[i] << endl;
 		long status = 0L;
@@ -204,123 +204,158 @@ void FindSSRs::processInput() // produce
 			break;
 		default:
 			this->fasta_seqs.dryUp(); // tell the FastaSequences object it will never recieve more input
-			for (uint32_t i = 1; i < this->num_threads; i++)
+			for (uint32_t i = 1; i < this->num_threads; ++i)
 			{
 				sem_post(&(this->n)); // tell the consumers there's another thing to consume (which will be the stop code), aka, it will return a stop code.
 			}
 			break;
 	}
 }
+
 void FindSSRs::processSequence(const string &header, string &sequence)
 {
 	//uint32_t seq_size = sequence.size();
 
 	if ( (sequence.size() >= this->args->getMinSequenceLength()) && (sequence.size() <= this->args->getMaxSequenceLength()) )
 	{
-		//sequence.append("$");
-		switch (this->num_threads)
+		vector<uint32_t> starts;
+		vector<uint32_t> sizes;
+
+		if (!this->args->isCharsToIgnore())
 		{
-			case 1:
-				this->findSSRsInSequence(header, sequence);
-				break;
-			default:
-				sem_wait(&(this->e)); // decrease num empty slots
-				this->fasta_seqs.add(header, sequence); // fill a slot
-				sem_post(&(this->n)); // increase num occupied slots
-				break;
+			starts.push_back(0);
+			sizes.push_back(sequence.size());
 		}
+		else
+		{
+			uint32_t ignored_chars_count = 0;
+			splitStringOnIgnoredChars(starts, sizes, sequence, ignored_chars_count);
+			this->progress_bar.updateProgress(ignored_chars_count);
+		}
+		
+		for (uint32_t i = 0; i < starts.size(); ++i)
+		{
+			string sub_seq = sequence.substr(starts[i], sizes[i]);
+			sub_seq.append("$");
+
+			switch (this->num_threads)
+			{
+				case 1:
+					this->findSSRsInSequence(header, sub_seq, starts[i]);
+					break;
+				default:
+					sem_wait(&(this->e)); // decrease num empty slots
+					this->fasta_seqs.add(header, sub_seq, starts[i]); // fill a slot
+					sem_post(&(this->n)); // increase num occupied slots
+					break;
+			}
+		}
+		
+		//sequence.append("$");
+		//switch (this->num_threads)
+		//{
+		//	case 1:
+		//		this->findSSRsInSequence(header, sequence);
+		//		break;
+		//	default:
+		//		sem_wait(&(this->e)); // decrease num empty slots
+		//		this->fasta_seqs.add(header, sequence); // fill a slot
+		//		sem_post(&(this->n)); // increase num occupied slots
+		//		break;
+		//}
 	}
 	//this->progress_bar.updateProgress(seq_size);
-	this->progress_bar.updateProgress(sequence.size());
+	//this->progress_bar.updateProgress(sequence.size()); //this is not the ideal place for this...it reports completion before processing actually happens..
+}
+
+void FindSSRs::findSSRsInSequence(const string &header, const string &sequence, uint32_t ignore_chars_offset)
+{
+	int SA[sequence.size()];
+	int LCP[sequence.size()];
+	
+	for (uint32_t i = 0; i < sequence.size(); ++i)
+	{
+		SA[i] = 0;
+		LCP[i] = 0;
+	}
+
+	// run sais to generate the SA and LCP arrays
+	if (sais(reinterpret_cast<const unsigned char*>(sequence.c_str()), SA, LCP, sequence.size()) == 0) // returns 0 if no error occured, non-zero otherwise //int sais(const unsigned char *T, int *SA, int *LCP, int n)
+	{
+		findSSRsInSA(header, sequence, SA, LCP, ignore_chars_offset);
+	}
+	else
+	{
+		throw "Sais returned with an error!!";
+	}
+	
+	this->progress_bar.updateProgress(sequence.size() - 1); // minus 1 for the '$' at the end
 }
 
 //void FindSSRs::findSSRsInSequence(const string &header, const string &sequence)
 //{
-//	// prepare all input for sais (saca & lcpca)
-//	//cout << "sequence size: " << sequence.size() << endl; // <-------------- DELETE THIS LINE!!!
-//	int SA[sequence.size()];
-//	int LCP[sequence.size()];
-//	//cout << "sequence size: " << sequence.size() << endl; // <-------------- DELETE THIS LINE!!!
-//	//cout.flush();
-//	for (uint32_t i = 0; i < sequence.size(); i++)
-//	{
-//		SA[i] = 0;
-//		LCP[i] = 0;
-//	}
+//	//cerr << header << endl; // <------------------------- DELETE THIS LINE!!!
+//	vector<uint32_t> starts;
+//	vector<uint32_t> sizes;
 //
-//	// run sais to generate the SA and LCP arrays
-//	if (sais(reinterpret_cast<const unsigned char*>(sequence.c_str()), SA, LCP, sequence.size()) == 0) // returns 0 if no error occured, non-zero otherwise //int sais(const unsigned char *T, int *SA, int *LCP, int n)
+//	if (!this->args->isCharsToIgnore())
 //	{
-//		findSSRsInSA(header, sequence, SA, LCP);
+//		starts.push_back(0);
+//		sizes.push_back(sequence.size());
 //	}
 //	else
 //	{
-//		throw "Sais returned with an error!!";
+//		splitStringOnIgnoredChars(starts, sizes, sequence);
+//	}
+//
+//	//for (uint32_t i = 0; i < starts.size(); ++i)
+//	//{
+//	//	cerr << "starts " << i << ": " << starts[i] << "\tsizes " << i << ": " << sizes[i] << endl;
+//	//}
+//
+//	vector<Results> res_vec;
+//
+//	for (uint32_t j = 0; j < starts.size(); ++j)
+//	{
+//		// prepare all input for sais (saca & lcpca)
+//		int SA[sizes[j]];
+//		int LCP[sizes[j]];
+//		
+//		for (uint32_t i = 0; i < sizes[j]; ++i)
+//		{
+//			SA[i] = 0;
+//			LCP[i] = 0;
+//		}
+//
+//		//int sais(const unsigned char *T, int *SA, int *LCP, int n)
+//		// run sais to generate the SA and LCP arrays
+//		string temp_seq = sequence.substr(starts[j], sizes[j]);
+//		temp_seq.append("$");
+//		//if (sais(reinterpret_cast<const unsigned char*>(sequence.c_str()) + starts[j], SA, LCP, sizes[j]) == 0) // returns 0 if no error occured, non-zero otherwise //int sais(const unsigned char *T, int *SA, int *LCP, int n)
+//		if (sais(reinterpret_cast<const unsigned char*>(temp_seq.c_str()), SA, LCP, temp_seq.size()) == 0) // returns 0 if no error occured, non-zero otherwise //int sais(const unsigned char *T, int *SA, int *LCP, int n)
+//		{
+//			// TODO -- Make sure the pointer arithmetic is valid
+//			//findSSRsInSA(header, sequence.substr(starts[j], sizes[j]), SA, LCP, res_vec); // TODO -- make sure I don't need to create the string object BEFORE passing it in
+//			findSSRsInSA(header, temp_seq, SA, LCP, res_vec);
+//		}
+//		else
+//		{
+//			throw "Sais returned with an error!!";
+//		}
+//	}
+//
+//	for (uint32_t i = 0; i < res_vec.size(); ++i)
+//	{
+//		res_vec[i].writeToFile(this->args->isIncludeZero(), this->args->isAdditionalOutput(),header, sequence.substr(starts[i], sizes[i]), this->out_file, starts[i]); // TODO -- make sure I don't need to create the string object BEFORE passing it in
 //	}
 //}
 
-void FindSSRs::findSSRsInSequence(const string &header, const string &sequence)
-{
-	//cerr << header << endl; // <------------------------- DELETE THIS LINE!!!
-	vector<uint32_t> starts;
-	vector<uint32_t> sizes;
-
-	if (!this->args->isCharsToIgnore())
-	{
-		starts.push_back(0);
-		sizes.push_back(sequence.size());
-	}
-	else
-	{
-		splitStringOnIgnoredChars(starts, sizes, sequence);
-	}
-
-	//for (uint32_t i = 0; i < starts.size(); ++i)
-	//{
-	//	cerr << "starts " << i << ": " << starts[i] << "\tsizes " << i << ": " << sizes[i] << endl;
-	//}
-
-	vector<Results> res_vec;
-
-	for (uint32_t j = 0; j < starts.size(); ++j)
-	{
-		// prepare all input for sais (saca & lcpca)
-		int SA[sizes[j]];
-		int LCP[sizes[j]];
-		
-		for (uint32_t i = 0; i < sizes[j]; ++i)
-		{
-			SA[i] = 0;
-			LCP[i] = 0;
-		}
-
-		//int sais(const unsigned char *T, int *SA, int *LCP, int n)
-		// run sais to generate the SA and LCP arrays
-		string temp_seq = sequence.substr(starts[j], sizes[j]);
-		temp_seq.append("$");
-		//if (sais(reinterpret_cast<const unsigned char*>(sequence.c_str()) + starts[j], SA, LCP, sizes[j]) == 0) // returns 0 if no error occured, non-zero otherwise //int sais(const unsigned char *T, int *SA, int *LCP, int n)
-		if (sais(reinterpret_cast<const unsigned char*>(temp_seq.c_str()), SA, LCP, temp_seq.size()) == 0) // returns 0 if no error occured, non-zero otherwise //int sais(const unsigned char *T, int *SA, int *LCP, int n)
-		{
-			// TODO -- Make sure the pointer arithmetic is valid
-			//findSSRsInSA(header, sequence.substr(starts[j], sizes[j]), SA, LCP, res_vec); // TODO -- make sure I don't need to create the string object BEFORE passing it in
-			findSSRsInSA(header, temp_seq, SA, LCP, res_vec);
-		}
-		else
-		{
-			throw "Sais returned with an error!!";
-		}
-	}
-
-	for (uint32_t i = 0; i < res_vec.size(); ++i)
-	{
-		res_vec[i].writeToFile(this->args->isIncludeZero(), this->args->isAdditionalOutput(),header, sequence.substr(starts[i], sizes[i]), this->out_file, starts[i]); // TODO -- make sure I don't need to create the string object BEFORE passing it in
-	}
-}
-
-void FindSSRs::findSSRsInSA(const string &header, const string &sequence, const int *SA, const int *LCP, vector<Results> &res_vec)
+//void FindSSRs::findSSRsInSA(const string &header, const string &sequence, const int *SA, const int *LCP)
+//void FindSSRs::findSSRsInSA(const string &header, const string &sequence, const int *SA, const int *LCP, vector<Results> &res_vec)
+void FindSSRs::findSSRsInSA(const string &header, const string &sequence, const int *SA, const int *LCP, uint32_t ignore_chars_offset)
 {
 	Results results = Results(sequence.size(), this->args->getEnumeratedSSRs());
-	for (uint32_t i = 0; i < sequence.size() - 1; i++)
+	for (uint32_t i = 0; i < sequence.size() - 1; ++i)
 	{
 		bool stop = true;	
 		uint32_t j = i + 1;
@@ -350,13 +385,13 @@ void FindSSRs::findSSRsInSA(const string &header, const string &sequence, const 
 //		while ( (j < sequence.size()) && ( (this->args->isQuickAndDirty() == false) || (j < (i + 7)) ) );
 	}	
 
-	//TODO -- only thing I changed in this function
 	//results.writeToFile(this->args->isIncludeZero(), this->args->isAdditionalOutput(),header, sequence, this->out_file);
-	res_vec.push_back(results);
+	//res_vec.push_back(results);
+	results.writeToFile(this->args->isIncludeZero(), this->args->isAdditionalOutput(),header, sequence, this->out_file, ignore_chars_offset);
 
 	//printExtraInformation(header, sequence, SA, LCP, out_file);
 }
-void FindSSRs::splitStringOnIgnoredChars(vector<uint32_t> &starts, vector<uint32_t> &sizes, const string &sequence)
+void FindSSRs::splitStringOnIgnoredChars(vector<uint32_t> &starts, vector<uint32_t> &sizes, const string &sequence, uint32_t &actually_ignored_chars)
 {
 	//uint32_t effective_seq_size = sequence.size() - 1; // to account for the '$'
 	//cerr << "seq: " << sequence << endl;
@@ -365,6 +400,7 @@ void FindSSRs::splitStringOnIgnoredChars(vector<uint32_t> &starts, vector<uint32
 	//while (i < effective_seq_size && this->args->getIgnoreChars()->count(sequence[i]))
 	while (i < sequence.size() && this->args->getIgnoreChars()->count(sequence[i]))
 	{
+		++actually_ignored_chars;
 		++i;
 	}
 
@@ -396,6 +432,7 @@ void FindSSRs::splitStringOnIgnoredChars(vector<uint32_t> &starts, vector<uint32
 			sizes.push_back(i - starts[starts.size() - 1]);
 			//sizes.push_back(i - starts[starts.size() - 1] + 1); // add 1 to account for the trailing '$'
 			//cerr << "added size. pos: " << i << "\tsize: " << i - starts[starts.size() - 1] << endl;
+			++actually_ignored_chars;
 			++i;
 
 			// Now, let's skip all the other invalid characters adjacent to this one
@@ -403,6 +440,7 @@ void FindSSRs::splitStringOnIgnoredChars(vector<uint32_t> &starts, vector<uint32
 			while (i < sequence.size() && this->args->getIgnoreChars()->count(sequence[i]))
 			{
 				//cerr << "skipping 'bad'. pos: " << i << endl;
+				++actually_ignored_chars;
 				++i;
 			}
 			
@@ -445,7 +483,7 @@ void FindSSRs::printExtraInformation(const string &header, const string &sequenc
 	out_file << "header: " << header << "\n";
 	out_file << "sequence: " << sequence << "\n";
 	out_file << " SA: ";
-	for (uint32_t i = 0; i < sequence.size(); i++)
+	for (uint32_t i = 0; i < sequence.size(); ++i)
 	{
 		string temp;
 		stringstream strm;
@@ -454,7 +492,7 @@ void FindSSRs::printExtraInformation(const string &header, const string &sequenc
 		out_file << temp << " ";
 	}
 	out_file << "\nLCP: - ";
-	for (uint32_t i = 1; i < sequence.size(); i++)
+	for (uint32_t i = 1; i < sequence.size(); ++i)
 	{
 		string temp;
 		stringstream strm;
@@ -470,13 +508,14 @@ void* FindSSRs::consume(void* find_ssrs_vptr) // void* (*)(void* )
 	FindSSRs* find_ssrs_ptr = (FindSSRs*) find_ssrs_vptr;
 	string header;
 	string sequence;
+	uint32_t ignore_chars_offset = 0;
 	while (go)
 	{
 		sem_wait(find_ssrs_ptr->getN()); // decrease num occupied slots
-		if (!find_ssrs_ptr->fasta_seqs.get(header, sequence)) // take
+		if (!find_ssrs_ptr->fasta_seqs.get(header, sequence, ignore_chars_offset)) // take
 		{
 			sem_post(find_ssrs_ptr->getE()); // increase num empty slots
-			find_ssrs_ptr->findSSRsInSequence(header, sequence); // consume (find the ssrs in the given sequence)
+			find_ssrs_ptr->findSSRsInSequence(header, sequence, ignore_chars_offset); // consume (find the ssrs in the given sequence)
 		}
 		else
 		{
@@ -520,3 +559,28 @@ uint32_t calculateDataSizeFromFasta(ifstream &fasta)
 	fasta.seekg(pos, fasta.beg);
 	return size;
 }
+
+//void FindSSRs::findSSRsInSequence(const string &header, const string &sequence)
+//{
+//	// prepare all input for sais (saca & lcpca)
+//	//cout << "sequence size: " << sequence.size() << endl; // <-------------- DELETE THIS LINE!!!
+//	int SA[sequence.size()];
+//	int LCP[sequence.size()];
+//	//cout << "sequence size: " << sequence.size() << endl; // <-------------- DELETE THIS LINE!!!
+//	//cout.flush();
+//	for (uint32_t i = 0; i < sequence.size(); ++i)
+//	{
+//		SA[i] = 0;
+//		LCP[i] = 0;
+//	}
+//
+//	// run sais to generate the SA and LCP arrays
+//	if (sais(reinterpret_cast<const unsigned char*>(sequence.c_str()), SA, LCP, sequence.size()) == 0) // returns 0 if no error occured, non-zero otherwise //int sais(const unsigned char *T, int *SA, int *LCP, int n)
+//	{
+//		findSSRsInSA(header, sequence, SA, LCP);
+//	}
+//	else
+//	{
+//		throw "Sais returned with an error!!";
+//	}
+//}
