@@ -55,9 +55,12 @@ public:
 	void joinAndForgetAllThreads();
 	void processInput();
 	void processSequence(const string &header, string &sequence);
-	void findSSRsInSequence(const string &header, const string &sequence);
-	void findSSRsInSA(const string &header, const string &sequence, const int *SA, const int *LCP, vector<Results> &res_vec);
-	void splitStringOnIgnoredChars(vector<uint32_t> &starts, vector<uint32_t> &sizes, const string &sequence);
+	//void findSSRsInSequence(const string &header, const string &sequence);
+	void findSSRsInSequence(const string &header, const string &sequence, uint32_t ignore_chars_offset);
+	//void findSSRsInSA(const string &header, const string &sequence, const int *SA, const int *LCP);
+	//void findSSRsInSA(const string &header, const string &sequence, const int *SA, const int *LCP, vector<Results> &res_vec);
+	void findSSRsInSA(const string &header, const string &sequence, const int *SA, const int *LCP, uint32_t ignore_chars_offset);
+	void splitStringOnIgnoredChars(vector<uint32_t> &starts, vector<uint32_t> &sizes, const string &sequence, uint32_t &actually_ignored_chars);
 	void printExtraInformation(const string &header, const string &sequence, const int *SA, const int *LCP);
 	static void* consume(void* find_ssrs);
 };

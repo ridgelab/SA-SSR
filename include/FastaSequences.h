@@ -19,6 +19,7 @@ class FastaSequences
 private:
 	queue<string> headers;
 	queue<string> sequences;
+	queue<uint32_t> ignore_chars_offsets;
 	sem_t lock;
 	bool dried_up_source;
 	uint32_t dry_marker;
@@ -29,7 +30,9 @@ public:
 	bool isDriedUp() const;
 	bool empty();
 	void dryUp();
-	void add(string header, string sequence);
-	uint32_t get(string &header, string &sequence);
+	//void add(string header, string sequence);
+	void add(string header, string sequence, uint32_t ignore_chars_offset);
+	//uint32_t get(string &header, string &sequence);
+	uint32_t get(string &header, string &sequence, uint32_t &ignore_chars_offset);
 	//string toJSON();
 };

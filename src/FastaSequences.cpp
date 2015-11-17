@@ -35,15 +35,18 @@ void FastaSequences::dryUp()
 	this->dried_up_source = true;
 	sem_post(&(this->lock));
 }
-void FastaSequences::add(string header, string sequence)
+//void FastaSequences::add(string header, string sequence)
+void FastaSequences::add(string header, string sequence, uint32_t ignore_chars_offset)
 {
 	sem_wait(&(this->lock));
 	this->headers.push(header);
 	this->sequences.push(sequence);
+	this->ignore_chars_offsets.push(ignore_chars_offset);
 	if (!this->dried_up_source) { this->dry_marker++; }
 	sem_post(&(this->lock));
 }
-uint32_t FastaSequences::get(string &header, string &sequence)
+//uint32_t FastaSequences::get(string &header, string &sequence)
+uint32_t FastaSequences::get(string &header, string &sequence, uint32_t &ignore_chars_offset)
 {
 	uint32_t retval = 0;
 
@@ -53,8 +56,10 @@ uint32_t FastaSequences::get(string &header, string &sequence)
 	{
 		header = this->headers.front();
 		sequence = this->sequences.front();
+		ignore_chars_offset = this->ignore_chars_offsets.front();
 		this->headers.pop();
 		this->sequences.pop();
+		this->ignore_chars_offsets.pop();
 		this->dry_marker--;
 	}
 	//if (this->headers.size() > 0)
