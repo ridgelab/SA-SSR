@@ -38,6 +38,7 @@ private:
 	unordered_set<string>* enumerated_ssrs;
 	string out_file_name;
 	string out_file_header;
+	unordered_set<char>* ignore_chars;
 
 public:
 	FindSSRsArgs(int argc, char* argv[]);
@@ -48,6 +49,7 @@ public:
 	bool isAdditionalOutput() const;
 	bool isExhaustive() const;
 	bool isIncludeZero() const;
+	bool isCharsToIgnore() const;
 	//bool doingBlast() const;
 	uint32_t getMinNucleotideLength() const;
 	uint32_t getMinSSRLength() const;
@@ -62,12 +64,15 @@ public:
 	//string getSpecies2BlastdbName() const;
 	//string& getSpecies2Blastdb();
 	unordered_set<string>* getEnumeratedSSRs() const;
+	unordered_set<char>* getIgnoreChars() const;
 	string getOutFileName() const;
 	string getOutFileHeader() const;
 	void setExhaustiveStatus(bool _ehaustive);
 	void setSpecies1FastaFileName(string species_1_fasta_file_name);
 	void addEnumeratedSSR(string enumerated_ssr);
+	void addIgnoreChar(char ignore_char);
 	void addEnumeratedSSRs(string enumerated_ssrs_comma_separated);
+	void addIgnoreChars(string ignore_chars_comma_separated);
 	void setOutFileName(string out_file_name);
 	void processArgs(int argc, char* argv[]);
 	void printHelp() const;

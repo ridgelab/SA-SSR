@@ -108,7 +108,8 @@ uint32_t Results::enumeratedSSRFilter(const string &ssr)
 	}
 	return enumerated_ssrs->count(ssr);
 }
-void Results::writeToFile(bool include_zero, bool write_additional_output, const string &header, const string &sequence, OutputFile &out_file)
+//void Results::writeToFile(bool include_zero, bool write_additional_output, const string &header, const string &sequence, OutputFile &out_file)
+void Results::writeToFile(bool include_zero, bool write_additional_output, const string &header, const string &sequence, OutputFile &out_file, uint32_t ignore_chars_offset)
 {
 	string output;
 	if (!results.empty())
@@ -117,7 +118,7 @@ void Results::writeToFile(bool include_zero, bool write_additional_output, const
 		{
 			if (isStartPositionAvailableAt(itr->getP()) == true)
 			{
-				itr->writeToFile(write_additional_output, header, sequence, output);
+				itr->writeToFile(write_additional_output, header, sequence, output, ignore_chars_offset);
 				//output = output + "\n";
 				output += "\n";
 

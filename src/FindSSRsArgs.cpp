@@ -28,6 +28,7 @@ FindSSRsArgs::FindSSRsArgs(int argc, char* argv[])
 	this->enumerated_ssrs = new unordered_set<string>;
 	this->out_file_name = "";
 	this->out_file_header = "#Sequence_Name\tSSR\tRepeats\tPosition (zero-based)\n";
+	this->ignore_chars = new unordered_set<char>;
 	
 	processArgs(argc, argv);
 }
@@ -54,11 +55,15 @@ void FindSSRsArgs::deepCopy(const FindSSRsArgs &args)
 	this->enumerated_ssrs = args.getEnumeratedSSRs();
 	this->out_file_name = args.getOutFileName();
 	this->out_file_header = args.getOutFileHeader();
+	this->ignore_chars = args.getIgnoreChars();
 }
 FindSSRsArgs::~FindSSRsArgs()
 {
 	this->enumerated_ssrs->clear();
 	delete this->enumerated_ssrs;
+	
+	this->ignore_chars->clear();
+	delete this->ignore_chars;
 }
 bool FindSSRsArgs::isArgumentsValid() const
 {
@@ -71,6 +76,10 @@ bool FindSSRsArgs::isAdditionalOutput() const
 bool FindSSRsArgs::isIncludeZero() const
 {
 	return this->include_zero;
+}
+bool FindSSRsArgs::isCharsToIgnore() const
+{
+	return this->ignore_chars->empty() ? false : true;
 }
 bool FindSSRsArgs::isExhaustive() const
 {
@@ -136,6 +145,10 @@ unordered_set<string>* FindSSRsArgs::getEnumeratedSSRs() const
 {
 	return this->enumerated_ssrs;
 }
+unordered_set<char>* FindSSRsArgs::getIgnoreChars() const
+{
+	return this->ignore_chars;
+}
 string FindSSRsArgs::getOutFileName() const
 {
 	return this->out_file_name;
@@ -161,6 +174,10 @@ void FindSSRsArgs::addEnumeratedSSR(string enumerated_ssr)
 		this->enumerated_ssrs->insert(enumerated_ssr);
 	}
 }
+void FindSSRsArgs::addIgnoreChar(char ignore_char)
+{
+	this->ignore_chars->insert(ignore_char);
+}
 void FindSSRsArgs::addEnumeratedSSRs(string enumerated_ssrs_comma_separated)
 {
 	string temp;
@@ -175,6 +192,16 @@ void FindSSRsArgs::addEnumeratedSSRs(string enumerated_ssrs_comma_separated)
 		}
 	}
 	addEnumeratedSSR(temp);
+}
+void FindSSRsArgs::addIgnoreChars(string ignore_chars_comma_separated)
+{
+	for (uint32_t i = 0; i < ignore_chars_comma_separated.size(); i++)
+	{
+		if (ignore_chars_comma_separated[i] != ',')
+		{
+			addIgnoreChar((char) toupper(ignore_chars_comma_separated[i]));
+		}
+	}
 }
 void FindSSRsArgs::setOutFileName(string out_file_name)
 {
@@ -221,6 +248,21 @@ void FindSSRsArgs::processArgs(int argc, char* argv[])
 				{
 					i++;
 					addEnumeratedSSRs(argv[i]);
+				}
+				else
+				{
+					this->arguments_valid = false;
+				}
+			}
+			else if (strcmp(argv[i],"--ignore") == 0 || strcmp(argv[i],"-i") == 0)
+			{
+				//expected_args = expected_args + 2; // 0=FindSSRsArgs, (1:argc-3)=( (-e || --exhaustive) && ((-s || --ssrs) SSR1,SSR2,SSR3,...,SSRn) && ((-b || --blast) species2-blastdb) && ((-n || --min-nucs) 16) && ((-m || --min-ssr-len) 4) && ((-M || --max-ssr-len) 8) ), (argc-2)=input_file.fasta, (argc-1)=output_file
+				expected_args += 2; // 0=FindSSRsArgs, (1:argc-3)=( (-e || --exhaustive) && ((-s || --ssrs) SSR1,SSR2,SSR3,...,SSRn) && ((-b || --blast) species2-blastdb) && ((-n || --min-nucs) 16) && ((-m || --min-ssr-len) 4) && ((-M || --max-ssr-len) 8) ), (argc-2)=input_file.fasta, (argc-1)=output_file
+
+				if (i < (uint32_t) (argc - 3)) // as long as there is more space for the input and output files...
+				{
+					i++;
+					addIgnoreChars(argv[i]);
 				}
 				else
 				{
@@ -484,6 +526,7 @@ void FindSSRsArgs::printHelp() const
 	cerr << "    <output_file>" << endl << "        The name of the output file. This is a positional argument." << endl << endl;
 	cerr << "OPTIONAL:" << endl << endl;
 	cerr << "    INPUT CONTROL:" << endl << endl;
+	cerr << "        -i, --ignore" << endl << "            Ignore characters listed from the input sequences.  This parameter\n            must be a comma-separated list of UPPERCASE characters:\n            \"CHAR-1,CHAR-2,...,CHAR-n\" (e.g., \"N\" or \"N,K\")." << endl << endl;
 	cerr << "        -l, --min-seq-len" << endl << "            The min length of a fasta sequence required before finding SSRs will\n            be attempted. [default: 100]" << endl << endl;
 	cerr << "        -L, --max-seq-len" << endl << "            The max length of a fasta sequence after which finding SSRs will not\n            be attempted. [default: 1500]" << endl << endl;
 	cerr << "    OUTPUT CONTROL:" << endl << endl;

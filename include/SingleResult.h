@@ -31,7 +31,8 @@ public:
 	void setR(uint32_t r);
 	void setP(uint32_t p);
 	void setAll(uint32_t k, uint32_t r, uint32_t p);
-	void writeToFile(bool write_additional_output, const string &header, const string &sequence, string &output) const;
+	//void writeToFile(bool write_additional_output, const string &header, const string &sequence, string &output) const;
+	void writeToFile(bool write_additional_output, const string &header, const string &sequence, string &output, uint32_t ignore_chars_offset) const;
 	string toString() const;
 	bool operator<(const SingleResult &s) const;
 };

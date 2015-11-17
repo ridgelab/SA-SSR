@@ -53,11 +53,13 @@ void SingleResult::setAll(uint32_t k, uint32_t r, uint32_t p)
 	this->r = r;
 	this->p = p;
 }
-void SingleResult::writeToFile(bool write_additional_output, const string &header, const string &sequence, string &output) const
+//void SingleResult::writeToFile(bool write_additional_output, const string &header, const string &sequence, string &output) const
+void SingleResult::writeToFile(bool write_additional_output, const string &header, const string &sequence, string &output, uint32_t ignore_chars_offset) const
 {
 	string temp;
 	stringstream strm;
-	strm << (this->r + 1) << " " << this->p;
+	//strm << (this->r + 1) << " " << this->p;
+	strm << (this->r + 1) << " " << this->p + ignore_chars_offset;
 	strm >> temp;
 	//output = output + header.substr(1,header.size() - 1); // header
 	output += header.substr(1,header.size() - 1); // header

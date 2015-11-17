@@ -12,6 +12,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <vector>
 #include <semaphore.h>
 #include <pthread.h>
 
@@ -55,7 +56,8 @@ public:
 	void processInput();
 	void processSequence(const string &header, string &sequence);
 	void findSSRsInSequence(const string &header, const string &sequence);
-	void findSSRsInSA(const string &header, const string &sequence, const int *SA, const int *LCP);
+	void findSSRsInSA(const string &header, const string &sequence, const int *SA, const int *LCP, vector<Results> &res_vec);
+	void splitStringOnIgnoredChars(vector<uint32_t> &starts, vector<uint32_t> &sizes, const string &sequence);
 	void printExtraInformation(const string &header, const string &sequence, const int *SA, const int *LCP);
 	static void* consume(void* find_ssrs);
 };
