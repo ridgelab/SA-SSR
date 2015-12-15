@@ -387,7 +387,7 @@ void FindSSRs::findSSRsInSA(const string &header, const string &sequence, const 
 
 	//results.writeToFile(this->args->isIncludeZero(), this->args->isAdditionalOutput(),header, sequence, this->out_file);
 	//res_vec.push_back(results);
-	results.writeToFile(this->args->isIncludeZero(), this->args->isAdditionalOutput(),header, sequence, this->out_file, ignore_chars_offset);
+	results.writeToFile(this->args->isIncludeZero(), this->args->isAdditionalOutput(),header, sequence, this->out_file, ignore_chars_offset, this->args->isWriteOverlaps());
 
 	//printExtraInformation(header, sequence, SA, LCP, out_file);
 }

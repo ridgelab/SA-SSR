@@ -29,6 +29,7 @@ FindSSRsArgs::FindSSRsArgs(int argc, char* argv[])
 	this->out_file_name = "";
 	this->out_file_header = "#Sequence_Name\tSSR\tRepeats\tPosition (zero-based)\n";
 	this->ignore_chars = new unordered_set<char>;
+	this->write_overlaps = false;
 	
 	processArgs(argc, argv);
 }
@@ -56,6 +57,7 @@ void FindSSRsArgs::deepCopy(const FindSSRsArgs &args)
 	this->out_file_name = args.getOutFileName();
 	this->out_file_header = args.getOutFileHeader();
 	this->ignore_chars = args.getIgnoreChars();
+	this->write_overlaps = args.isWriteOverlaps();
 }
 FindSSRsArgs::~FindSSRsArgs()
 {
@@ -149,6 +151,10 @@ unordered_set<char>* FindSSRsArgs::getIgnoreChars() const
 {
 	return this->ignore_chars;
 }
+bool FindSSRsArgs::isWriteOverlaps() const
+{
+	return this->write_overlaps;
+}
 string FindSSRsArgs::getOutFileName() const
 {
 	return this->out_file_name;
@@ -237,6 +243,11 @@ void FindSSRsArgs::processArgs(int argc, char* argv[])
 			{
 				this->ehaustive = true;
 				//expected_args = expected_args + 1; // 0=FindSSRsArgs, (1:argc-3)=( (-e || --exhaustive) && ((-s || --ssrs) SSR1,SSR2,SSR3,...,SSRn) && ((-b || --blast) species2-blastdb) && ((-n || --min-nucs) 16) && ((-m || --min-ssr-len) 4) && ((-M || --max-ssr-len) 8) ), (argc-2)=input_file.fasta, (argc-1)=output_file
+				++expected_args; // 0=FindSSRsArgs, (1:argc-3)=( (-e || --exhaustive) && ((-s || --ssrs) SSR1,SSR2,SSR3,...,SSRn) && ((-b || --blast) species2-blastdb) && ((-n || --min-nucs) 16) && ((-m || --min-ssr-len) 4) && ((-M || --max-ssr-len) 8) ), (argc-2)=input_file.fasta, (argc-1)=output_file
+			}
+			else if (strcmp(argv[i],"--write-overlaps") == 0 || strcmp(argv[i],"-o") == 0)
+			{
+				this->write_overlaps = true;
 				++expected_args; // 0=FindSSRsArgs, (1:argc-3)=( (-e || --exhaustive) && ((-s || --ssrs) SSR1,SSR2,SSR3,...,SSRn) && ((-b || --blast) species2-blastdb) && ((-n || --min-nucs) 16) && ((-m || --min-ssr-len) 4) && ((-M || --max-ssr-len) 8) ), (argc-2)=input_file.fasta, (argc-1)=output_file
 			}
 			else if (strcmp(argv[i],"--ssrs") == 0 || strcmp(argv[i],"-s") == 0)
@@ -534,6 +545,7 @@ void FindSSRsArgs::printHelp() const
 	cerr << "        -m, --min-ssr-len" << endl << "            The min number of nucleotides in the base of the SSR (e.g., ACGTACGT\n            has base-ssr-len of 4, AAAAAAAAAAAAAAAAAA has base-ssr-len of 1).\n            [default: 4]" << endl << endl;
 	cerr << "        -M, --max-ssr-len" << endl << "            The max number of nucleotides in the base of the SSR (e.g., ACGTACGT\n            has base-ssr-len of 4, AAAAAAAAAAAAAAAAAA has base-ssr-len of 1).\n            [default: 8]" << endl << endl;
 	cerr << "        -n, --min-nucs" << endl << "            The min number of nucleotides in the entire SSR (e.g., ACGTACGT has 8\n            nucleotides, AAAAAAAAAAAAAAAAAA has 18 nucleotides). [default: 16]" << endl << endl;
+	cerr << "        -o, --write-overlaps" << endl << "            When overlapping SSRs are found, write both.  For example, in the\n            sequence CAGAGA there are 2 SSRs: AGAG and GAGA.  By default, only\n            one will be output.  With this option, both will be." << endl << endl;
 	cerr << "        -r, --min-repeats" << endl << "            The min number of repeats in the entire SSR (e.g., ACGTACGT has 2\n            repeats, AAAAAAAAAAAAAAAAAA has 18 repeats). [default: 1]" << endl << endl;
 	cerr << "        -R, --max-repeats" << endl << "            The max number of repeats in the entire SSR (e.g., ACGTACGT has 2\n            repeats, AAAAAAAAAAAAAAAAAA has 18 repeats). [default: none\n            (technically: 4,294,967,295)]" << endl << endl;
 	cerr << "        -s, --ssrs" << endl << "            Filter output by the supplied list of base SSR units (e.g., AC for\n            ACACAC). If an SSR with a different base unit is found, it will be\n            discarded. The enumerated SSRs should take the form of an UPPERCASE,\n            comma-separated list: SSR-BASE1,SSR-BASE2,...,SSR-BASEn\n            (e.g., AC,GGTCA,TCA,TTCCGAAGGC)." << endl << endl;

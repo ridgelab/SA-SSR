@@ -109,7 +109,7 @@ uint32_t Results::enumeratedSSRFilter(const string &ssr)
 	return enumerated_ssrs->count(ssr);
 }
 //void Results::writeToFile(bool include_zero, bool write_additional_output, const string &header, const string &sequence, OutputFile &out_file)
-void Results::writeToFile(bool include_zero, bool write_additional_output, const string &header, const string &sequence, OutputFile &out_file, uint32_t ignore_chars_offset)
+void Results::writeToFile(bool include_zero, bool write_additional_output, const string &header, const string &sequence, OutputFile &out_file, uint32_t ignore_chars_offset, bool write_overlaps)
 {
 	string output;
 	if (!results.empty())
@@ -121,8 +121,11 @@ void Results::writeToFile(bool include_zero, bool write_additional_output, const
 				itr->writeToFile(write_additional_output, header, sequence, output, ignore_chars_offset);
 				//output = output + "\n";
 				output += "\n";
-
-				updateAvailableStartPositions(itr->getK(), itr->getR(), itr->getP());
+				
+				if (!write_overlaps)
+				{
+					updateAvailableStartPositions(itr->getK(), itr->getR(), itr->getP());
+				}
 			}
 		}
 	}

@@ -39,6 +39,7 @@ private:
 	string out_file_name;
 	string out_file_header;
 	unordered_set<char>* ignore_chars;
+	bool write_overlaps; // default false
 
 public:
 	FindSSRsArgs(int argc, char* argv[]);
@@ -65,6 +66,7 @@ public:
 	//string& getSpecies2Blastdb();
 	unordered_set<string>* getEnumeratedSSRs() const;
 	unordered_set<char>* getIgnoreChars() const;
+	bool isWriteOverlaps() const;
 	string getOutFileName() const;
 	string getOutFileHeader() const;
 	void setExhaustiveStatus(bool _ehaustive);
