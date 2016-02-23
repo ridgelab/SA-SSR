@@ -7,11 +7,11 @@ LIBS?=
 PREFIX=/usr/local/bin
 
 # ------ TARGETS ---------------------
-all: prep bin/findSSRs permissions
+all: prep bin/sa-ssr permissions
 
 clean:
 	@rm -rf bin/* || true
-	@if [ -e $(PREFIX)/findSSRs -a -r $(PREFIX)/findSSRs -a -w $(PREFIX)/findSSRs ] ; then rm -f $(PREFIX)/findSSRs || true; fi
+	@if [ -e $(PREFIX)/sa-ssr -a -r $(PREFIX)/sa-ssr -a -w $(PREFIX)/sa-ssr ] ; then rm -f $(PREFIX)/sa-ssr || true; fi
 
 realclean: clean
 	@rm -rf bin obj || true
@@ -43,13 +43,13 @@ obj/FindSSRsMain.o: src/FindSSRsMain.cpp include/FindSSRs.h include/FindSSRsArgs
 obj/ProgressMeter.o: src/ProgressMeter.cpp include/ProgressMeter.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-bin/findSSRs: obj/FindSSRsMain.o obj/OutputFile.o obj/FastaSequences.o obj/FindSSRs.o obj/Results.o obj/SingleResult.o obj/FindSSRsArgs.o obj/ProgressMeter.o
+bin/sa-ssr: obj/FindSSRsMain.o obj/OutputFile.o obj/FastaSequences.o obj/FindSSRs.o obj/Results.o obj/SingleResult.o obj/FindSSRsArgs.o obj/ProgressMeter.o
 	$(CXX) $(CXXFLAGS) $(LIBS) $^ -o $@
 
 permissions:
-	@chmod 750 bin bin/findSSRs || true
+	@chmod 750 bin bin/sa-ssr || true
 	@chmod 750 include src obj || true
 	@chmod 640 include/* src/* obj/* example/* || true
 
 install:
-	@if [ -e bin/findSSRs ]; then cp bin/findSSRs $(PREFIX)/findSSRs || true; else echo "ERROR: \`bin/findSSRs' does not exist. Did you forget to run \`make' first?"; fi
+	@if [ -e bin/sa-ssr ]; then cp bin/sa-ssr $(PREFIX)/sa-ssr || true; else echo "ERROR: \`bin/sa-ssr' does not exist. Did you forget to run \`make' first?"; fi

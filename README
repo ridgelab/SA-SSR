@@ -14,7 +14,7 @@ III. Usage Instructions and Examples
 
 I. Introduction
 ---------------
-findSSRs is a software tool developed to find Simple Sequence Repeats (SSRs) in
+SA-SSR is a software tool developed to find Simple Sequence Repeats (SSRs) in
 a sequence (presumably of DNA or RNA). SSRs are sometimes referred to as Short
 Tandem Repeats (STRs) or microsatellites. SSRs are genetic markers with several
 interesting and meaningful biological implications. For example, SSRs can play
@@ -38,7 +38,7 @@ See our paper in __journal__ for further information:
 
 II. Installation Instructions
 -----------------------------
-To compile findSSRs, simply type `make'. The binary will be in the `bin'
+To compile SA-SSR, simply type `make'. The binary will be in the `bin'
 directory. Your compiler must support C++11.
 
 To compile and install, type `make' followed by `make install'.  The binary
@@ -53,7 +53,7 @@ See `INSTALL' for further instructions.
 III. Usage Instructions and Examples
 -------------------------------------
 Please run the software with the `--help' option for complete usage instructions
-(i.e., type `findSSRs -h' or `findSSRs --help'). The format of the input and
+(i.e., type `sa-ssr -h' or `sa-ssr --help'). The format of the input and
 output files is described below; followed by usage examples.
 
 Input File Format:
@@ -161,26 +161,26 @@ Usage Examples:
 
         Example 1:
         
-            findSSRs input.fasta output.tsv
+            sa-ssr input.fasta output.tsv
 
-            Run findSSRs on fasta sequences in `input.fasta' and write results to
+            Run SA-SSR on fasta sequences in `input.fasta' and write results to
             `output.tsv'. This will use the default parameters; run the software
             with `--help' to see the defaults and check if they meet your needs.
         
         Example 2:
             
-            findSSRs -l 50 -L 200 input.fasta output.tsv
+            sa-ssr -l 50 -L 200 input.fasta output.tsv
 
-            Run findSSRs on fasta sequences in `input.fasta' that are between
+            Run SA-SSR on fasta sequences in `input.fasta' that are between
             50 and 200 base pairs long; i.e., do not search for SSRs in fasta
             sequences shorter than 50 or longer than 200 bps. All results
             will be in `output.tsv'.
         
         Example 3:
             
-            findSSRs -m 2 -M 9 -r 3 -R 20 input.fasta output.tsv
+            sa-ssr -m 2 -M 9 -r 3 -R 20 input.fasta output.tsv
             
-            Run findSSRs on fasta sequences in `input.fasta' and write results to
+            Run SA-SSR on fasta sequences in `input.fasta' and write results to
             `output.tsv'.  Only SSRs meeting the parameters provided will be
             included.  The meaning of each option is as follows:
 
@@ -199,16 +199,16 @@ Usage Examples:
         
         Example 4:
 
-            findSSRs -t 4 input.fasta output.tsv
+            sa-ssr -t 4 input.fasta output.tsv
 
-            Run findSSRs on fasta sequences in `input.fasta' and write results to
+            Run SA-SSR on fasta sequences in `input.fasta' and write results to
             `output.tsv'.  Use 4 threads of execution, instead of the default 1.
 
         Example 5:
 
-            findSSRs -l 50 -L 200 -m 2 -M 9 -r 3 -R 20 -t 4 input.fasta output.tsv
+            sa-ssr -l 50 -L 200 -m 2 -M 9 -r 3 -R 20 -t 4 input.fasta output.tsv
 
-            Run findSSRs on fasta sequences in `input.fasta' and write results to
+            Run SA-SSR on fasta sequences in `input.fasta' and write results to
             `output.tsv'. This is a combination of examples 2, 3, and 4.
 
 
@@ -226,18 +226,18 @@ Usage Examples:
                      assembly of whole exome sequencing reads. The file has 16
                      fasta sequences.
 
-         output*.tsv: The output files from running findSSRs as shown below.
+         output*.tsv: The output files from running SA-SSR as shown below.
 
-        One could just run findSSRs with the defaults:
+        One could just run SA-SSR with the defaults:
 
-            findSSRs input.fasta output_default.tsv
+            sa-ssr input.fasta output_default.tsv
 
         However, the defaults may not be the best parameters for your data.
         Below is a reasonable command to use with this example data. Each
         alteration from the default is explained and justified based on the
         data in this example.
 
-            findSSRs -l 70 -L 300 -m 2 -M 9 -r 2 -t 4 -f input.fasta output.tsv
+            sa-ssr -l 70 -L 300 -m 2 -M 9 -r 2 -t 4 -f input.fasta output.tsv
 
         -l 70    Do not search for SSRs in fasta sequences less than 70 bps in
                  length. For sake of the example, we assume based on our reads
@@ -266,7 +266,7 @@ Usage Examples:
                  question(s) and what you deem biologically interesting.
 
         -t 4     Use 4 threads of execution instead of the default 1. This must
-                 be based on the machine you run findSSRs on. Obviously, it
+                 be based on the machine you run SA-SSR on. Obviously, it
                  doesn't make sense to run with 9 threads on an 8 thread
                  machine.
 
