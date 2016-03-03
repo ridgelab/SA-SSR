@@ -15,6 +15,7 @@
 #include <vector>
 #include <semaphore.h>
 #include <pthread.h>
+#include <memory>
 
 #include "FindSSRsArgs.h"
 #include "Results.h"

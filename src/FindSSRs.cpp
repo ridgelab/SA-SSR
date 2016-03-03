@@ -270,8 +270,10 @@ void FindSSRs::processSequence(const string &header, string &sequence)
 
 void FindSSRs::findSSRsInSequence(const string &header, const string &sequence, uint32_t ignore_chars_offset)
 {
-	int SA[sequence.size()];
-	int LCP[sequence.size()];
+	//int SA[sequence.size()];
+	//int LCP[sequence.size()];
+	unique_ptr<int[]> SA(new int[sequence.size() + 1]);
+	unique_ptr<int[]> LCP(new int[sequence.size() + 1]);
 	
 	for (uint32_t i = 0; i < sequence.size(); ++i)
 	{
@@ -280,9 +282,12 @@ void FindSSRs::findSSRsInSequence(const string &header, const string &sequence, 
 	}
 
 	// run sais to generate the SA and LCP arrays
-	if (sais(reinterpret_cast<const unsigned char*>(sequence.c_str()), SA, LCP, sequence.size()) == 0) // returns 0 if no error occured, non-zero otherwise //int sais(const unsigned char *T, int *SA, int *LCP, int n)
+	//if (sais(reinterpret_cast<const unsigned char*>(sequence.c_str()), SA, LCP, sequence.size()) == 0) // returns 0 if no error occured, non-zero otherwise //int sais(const unsigned char *T, int *SA, int *LCP, int n)
+	//if (sais((unsigned char*) sequence.c_str(), SA, LCP, sequence.size()) == 0) // returns 0 if no error occured, non-zero otherwise //int sais(const unsigned char *T, int *SA, int *LCP, int n)
+	if (sais((unsigned char*) sequence.c_str(), SA.get(), LCP.get(), sequence.size()) == 0) // returns 0 if no error occured, non-zero otherwise //int sais(const unsigned char *T, int *SA, int *LCP, int n)
 	{
-		findSSRsInSA(header, sequence, SA, LCP, ignore_chars_offset);
+		//findSSRsInSA(header, sequence, SA, LCP, ignore_chars_offset);
+		findSSRsInSA(header, sequence, SA.get(), LCP.get(), ignore_chars_offset);
 	}
 	else
 	{

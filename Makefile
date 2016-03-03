@@ -2,7 +2,7 @@
 
 # ------ VARIABLES -------------------
 CXX?=g++
-CXXFLAGS+=-g -Wall -Wextra -std=c++11 -pthread
+CXXFLAGS+=-g -Wall -Wextra -std=c++11 -pthread -pedantic
 LIBS?=
 PREFIX=/usr/local/bin
 
