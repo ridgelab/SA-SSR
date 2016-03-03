@@ -96,14 +96,15 @@ uint32_t FindSSRs::run()
 	//sem_getvalue(&(this->d), &dval);
 	//sem_getvalue(&(this->s), &sval);
 	//cerr << "final n,e,d,s: " << nval << "," << eval << "," << dval << "," << sval << endl;
-	
+
 	return 0;
 }
 uint32_t FindSSRs::makeThreads()
 {
 	pthread_attr_t tattr;
 	pthread_attr_init(&tattr);
-	pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_JOINABLE); // Maybe omit because this is already default?
+	//pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_JOINABLE); // Maybe omit because this is already default?
+	pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);
 	
 	for (uint32_t i = 1; i < this->num_threads; ++i)
 	{
